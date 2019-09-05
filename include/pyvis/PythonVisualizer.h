@@ -1,7 +1,7 @@
 // PythonVisualizer.h
 //
 // Note: This must be included first! The Python.h header must come first within
-// a trnaslation unit!
+// a translation unit!
 //
 
 #include <Python.h>
