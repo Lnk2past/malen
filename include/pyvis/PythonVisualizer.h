@@ -3,6 +3,7 @@
 // Note: This must be included first! The Python.h header must come first within
 // a translation unit!
 //
+#pragma once
 
 #include <Python.h>
 
