@@ -15,13 +15,13 @@ int main()
     py::PythonVisualizer pyvis({".."});
     auto figure = pyvis.make_new_figure("Test Plot");
 
-    std::vector<std::vector<std::vector<int>>> data(10);
+    std::vector<std::vector<std::vector<int>>> data(100);
     for (auto &image : data)
     {
-        image.resize(10);
+        image.resize(100);
         for (auto &el : image)
         {
-            el = {dis(eng), dis(eng)};
+            el = {dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng)};
         }
     }
 

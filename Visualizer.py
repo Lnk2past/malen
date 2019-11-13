@@ -1,7 +1,7 @@
 import itertools
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.models import HoverTool, CustomJS, Slider
+from bokeh.models import HoverTool, CustomJS, Range1d, Slider
 from bokeh.plotting import figure, output_file, save, ColumnDataSource
 from bokeh.palettes import Dark2_5 as palette
 colors = itertools.cycle(palette)
@@ -19,7 +19,7 @@ def make_new_figure(title, plot_width=640, plot_height=640):
     Returns:
         bokeh.plotting.figure.Figure object to be graphed on
     """
-    fig = figure(x_range=(0, 10), y_range=(0, 10), **locals())
+    fig = figure(**locals())
     return fig
 
 
@@ -63,6 +63,13 @@ def image(fig, image, **kwargs):
     """
     """
     source = ColumnDataSource(data=dict(image=[image], x=[0], y=[0], dw=[len(image[0])], dh=[len(image)]))
+
+    max_r = max(len(image[0]), len(image))
+
+    fig.x_range.start = 0
+    fig.x_range.end = max_r
+    fig.y_range.start = 0
+    fig.y_range.end = max_r
     return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source, palette="Spectral11")
 
 
