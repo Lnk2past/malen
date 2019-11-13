@@ -15,23 +15,24 @@
 
 namespace py
 {
-PyObject* convert_to_python(const int c)
+namespace {
+inline PyObject* convert_to_python(const int c)
 {
     return PyLong_FromLong(c);
 }
 
-PyObject* convert_to_python(const double c)
+inline PyObject* convert_to_python(const double c)
 {
     return PyFloat_FromDouble(c);
 }
 
-PyObject* convert_to_python(const std::string &c)
+inline PyObject* convert_to_python(const std::string &c)
 {
     return PyUnicode_FromString(c.c_str());
 }
 
 template <template<typename...> class C, typename T>
-PyObject* convert_to_python(const C<T> &c)
+inline PyObject* convert_to_python(const C<T> &c)
 {
     PyObject *py_list = PyList_New(c.size());
     for (size_t idx = 0; idx < c.size(); ++idx)
@@ -42,6 +43,7 @@ PyObject* convert_to_python(const C<T> &c)
         }
     }
     return py_list;
+}
 }
 
 class PythonVisualizer
@@ -60,7 +62,7 @@ public:
         generate_html_handle(nullptr)
     {
         Py_Initialize();
-        PyList_Append(PySys_GetObject("path"), PyUnicode_FromString("."));
+        add_to_path(".");
         for (auto path : additional_paths)
         {
             add_to_path(path);
@@ -122,7 +124,7 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, PyUnicode_FromString(title.c_str())))
+        if (PyTuple_SetItem(args, 0, convert_to_python(title)))
         {
             throw std::runtime_error("Could not pack the title into the argument tuple!");
         }
@@ -151,7 +153,7 @@ public:
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())))
+        if (PyTuple_SetItem(args, 1, convert_to_python(plot_type)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
         }
@@ -191,7 +193,7 @@ public:
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())))
+        if (PyTuple_SetItem(args, 1, convert_to_python(plot_type)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
         }
@@ -294,7 +296,7 @@ public:
         {
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
-        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(filename.c_str())))
+        if (PyTuple_SetItem(args, 1, convert_to_python(filename)))
         {
             throw std::runtime_error("Could not pack the filename into the argument tuple!");
         }
@@ -324,7 +326,7 @@ public:
 
     void add_to_path(const std::string &path)
     {
-        PyList_Append(PySys_GetObject("path"), PyUnicode_FromString(path.c_str()));
+        PyList_Append(PySys_GetObject("path"), convert_to_python(path));
     }
 
 private:
