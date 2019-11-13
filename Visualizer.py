@@ -32,7 +32,7 @@ def line(fig, x, y, **kwargs):
         kwargs: Line properties and Fill properties
     """
     source = ColumnDataSource(data=dict(x=x, y=y))
-    fig.line('x', 'y', source=source, color=colors.__next__(), line_width=1, **kwargs)
+    return fig.line(x='x', y='y', source=source, color=colors.__next__(), line_width=1, **kwargs)
 
 
 def circle(fig, x, y, **kwargs):
@@ -43,7 +43,8 @@ def circle(fig, x, y, **kwargs):
         y (list): y data
         kwargs: Line properties and Fill properties
     """
-    fig.circle(x, y, color=colors.__next__(), **kwargs)
+    source = ColumnDataSource(data=dict(x=x, y=y))
+    return fig.circle(x='x', y='y', source=source, color=colors.__next__(), **kwargs)
 
 
 def vbar(fig, x, y, width, **kwargs):
@@ -54,26 +55,28 @@ def vbar(fig, x, y, width, **kwargs):
         y (list): bin values for each bar
         kwargs: Line properties and Fill properties
     """
-    x = [i + 0.5*width for i in x]
-    fig.vbar(x=x[::2], top=y[::2], width=width, fill_color='pink', fill_alpha=0.75, **kwargs)
-    fig.vbar(x=x[1::2], top=y[1::2], width=width, fill_color='lightblue', fill_alpha=0.75,  **kwargs)
+    source = ColumnDataSource(data=dict(x=x, top=y))
+    return fig.vbar(x=x, top=y, width=width, fill_color='pink', fill_alpha=0.75, **kwargs)
 
 
-def image(fig, images, **kwargs):
+def image(fig, image, **kwargs):
     """
     """
+    source = ColumnDataSource(data=dict(image=[image], x=[0], y=[0], dw=[len(image[0])], dh=[len(image)]))
+    return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source, palette="Spectral11")
+
+
+def image_slider(fig, images):
     x = [0 for _ in images[0]]
     y = [0 for _ in images]
     dw = [len(image[0]) for image in images]
     dh = [len(image) for image in images]
 
-    source = ColumnDataSource(data=dict(image=[images[0]], x=[x[0]], y=[y[0]], dw=[dw[0]], dh=[dh[0]]))
-    source2 = ColumnDataSource(data=dict(image=images, x=x, y=y, dw=dw, dh=dh))
-    
-    fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source, palette="Spectral11")
+    image_renderer = image(fig, images[0])
 
+    source2 = ColumnDataSource(data=dict(image=images, x=x, y=y, dw=dw, dh=dh))
     slider = Slider(start=0, end=(len(images)-1), value=0, step=1, title="Frame")
-    callback = CustomJS(args=dict(source=source, source2=source2),
+    callback = CustomJS(args=dict(source=image_renderer.data_source, source2=source2),
                         code="""
 source.data['image'] = [source2.data['image'][cb_obj.value]];
 source.data['x']     = [source2.data['x'][cb_obj.value]];
@@ -83,23 +86,20 @@ source.data['dh']    = [source2.data['dh'][cb_obj.value]];
 source.change.emit();""")
 
     slider.js_on_change('value', callback)
-    global layout
-    layout = column(
-        fig,
-        row(slider)
-    )
+    return make_layout(fig, slider)
 
+def make_layout(fig, obj):
+    return column(fig, row(obj))
 
-def generate_html(fig, filename, **kwargs):
+def generate_html(obj, filename, **kwargs):
     """Generate and save the HTML of the figure
-    
+    cd o    
     Arguments:
         filename (str): name of the file to save the figure to
         kwargs: additional output properties
     """
-    global layout
     output_file(filename, **kwargs)
-    save(layout)
+    save(obj)
 
 
 if __name__ == '__main__':
@@ -111,5 +111,6 @@ if __name__ == '__main__':
             data[-1].append([random.randint(0,10), random.randint(0,10)])
 
     f = make_new_figure('test')
-    image(f, data)
-    generate_html(f, 'test.html')
+    s = image_slider(f, data)
+    l = make_layout(f, s)
+    generate_html(l, 'test.html')

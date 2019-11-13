@@ -25,7 +25,8 @@ int main()
         }
     }
 
-    pyvis.image(figure, data);
-    pyvis.generate_html(figure, "test.html");
+    auto slider = pyvis.image_slider(figure, data);
+
+    pyvis.generate_html(slider, "test.html");
 }
 
