@@ -80,16 +80,18 @@ def image(fig, image, **kwargs):
     fig.x_range.end = max_r
     fig.y_range.start = 0
     fig.y_range.end = max_r
-    return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source)
+
+    kwargs['palette'] = kwargs.get('palette', 'Spectral11')
+    return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source, **kwargs)
 
 
-def image_slider(fig, images):
+def image_slider(fig, images, **kwargs):
     x = [0 for _ in images[0]]
     y = [0 for _ in images]
     dw = [len(image[0]) for image in images]
     dh = [len(image) for image in images]
 
-    image_renderer = image(fig, images[0])
+    image_renderer = image(fig, images[0], **kwargs)
 
     source2 = ColumnDataSource(data=dict(image=images, x=x, y=y, dw=dw, dh=dh))
     slider = Slider(start=0, end=(len(images)-1), value=0, step=1, title="Frame")
@@ -110,7 +112,7 @@ def generate_html(obj, filename, **kwargs):
     """Generate and save the HTML of the figure
 
     Arguments:
-        obj: BOkeh object or figure to be graphed
+        obj: Bokeh object or figure to be graphed
         filename (str): name of the file to save the figure to
         kwargs: additional output properties
     """

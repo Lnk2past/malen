@@ -24,7 +24,7 @@ int main()
             y_data.push_back(dis(eng));
             c_data.push_back(dis(eng));
         }
-        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data);
+        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data, pyvis.kwargs("legend", "test!"));
         pyvis.generate_html(figure, "test.html");
     }
     {
@@ -37,8 +37,7 @@ int main()
                 el = {dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng)};
             }
         }
-        auto figure = pyvis.make_new_figure("Test Plot");
-        pyvis.generate_html(figure, "test.html");
+        auto slider = pyvis.image_slider(figure, data);
+        pyvis.generate_html(slider, "test.html");
     }
-    
 }
