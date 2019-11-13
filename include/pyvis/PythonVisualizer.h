@@ -36,7 +36,7 @@ PyObject* convert_to_python(const C<T> &c)
     PyObject *py_list = PyList_New(c.size());
     for (size_t idx = 0; idx < c.size(); ++idx)
     {
-        if (PyList_SetItem(py_list, idx, convert_to_python(c[idx])) != 0)
+        if (PyList_SetItem(py_list, idx, convert_to_python(c[idx])))
         {
             throw std::runtime_error("Could not set the data at index " + std::to_string(idx) + "!");
         }
@@ -122,7 +122,7 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, PyUnicode_FromString(title.c_str())) != 0)
+        if (PyTuple_SetItem(args, 0, PyUnicode_FromString(title.c_str())))
         {
             throw std::runtime_error("Could not pack the title into the argument tuple!");
         }
@@ -146,22 +146,22 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, figure) != 0)
+        if (PyTuple_SetItem(args, 0, figure))
         {
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())) != 0)
+        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())))
         {
             throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
         }
 
-        if (PyTuple_SetItem(args, 2, convert_to_python(datax)) != 0)
+        if (PyTuple_SetItem(args, 2, convert_to_python(datax)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the x-data!");
         }
 
-        if (PyTuple_SetItem(args, 3, convert_to_python(datay)) != 0)
+        if (PyTuple_SetItem(args, 3, convert_to_python(datay)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the y-data!");
         }
@@ -186,27 +186,27 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, figure) != 0)
+        if (PyTuple_SetItem(args, 0, figure))
         {
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())) != 0)
+        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())))
         {
             throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
         }
 
-        if (PyTuple_SetItem(args, 2, convert_to_python(datax)) != 0)
+        if (PyTuple_SetItem(args, 2, convert_to_python(datax)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the x-data!");
         }
 
-        if (PyTuple_SetItem(args, 3, convert_to_python(datay)) != 0)
+        if (PyTuple_SetItem(args, 3, convert_to_python(datay)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the y-data!");
         }
 
-        if (PyTuple_SetItem(args, 4, convert_to_python(datacolor)) != 0)
+        if (PyTuple_SetItem(args, 4, convert_to_python(datacolor)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the color-data!");
         }
@@ -231,12 +231,12 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, figure) != 0)
+        if (PyTuple_SetItem(args, 0, figure))
         {
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        if (PyTuple_SetItem(args, 1, convert_to_python(image)) != 0)
+        if (PyTuple_SetItem(args, 1, convert_to_python(image)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the image!");
         }
@@ -261,12 +261,12 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, figure) != 0)
+        if (PyTuple_SetItem(args, 0, figure))
         {
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        if (PyTuple_SetItem(args, 1, convert_to_python(images)) != 0)
+        if (PyTuple_SetItem(args, 1, convert_to_python(images)))
         {
             throw std::runtime_error("Could not populate the argument tuple with the image!");
         }
@@ -290,11 +290,11 @@ public:
             throw std::runtime_error("Could not create a Python tuple!");
         }
 
-        if (PyTuple_SetItem(args, 0, figure) != 0)
+        if (PyTuple_SetItem(args, 0, figure))
         {
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
-        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(filename.c_str())) != 0)
+        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(filename.c_str())))
         {
             throw std::runtime_error("Could not pack the filename into the argument tuple!");
         }
@@ -315,7 +315,7 @@ public:
         {
             kw = PyDict_New();
         }
-        if (PyDict_SetItem(kw, convert_to_python(key), convert_to_python(val)) != 0)
+        if (PyDict_SetItem(kw, convert_to_python(key), convert_to_python(val)))
         {
             throw std::runtime_error("Failed add key/value pair to kwargs!");
         }
