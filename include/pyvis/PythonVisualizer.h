@@ -34,9 +34,8 @@ public:
     PythonVisualizer(const std::vector<std::string> &additional_paths = std::vector<std::string>()) :
         py_module(nullptr),
         make_new_figure_handle(nullptr),
-        line_handle(nullptr),
-        circle_handle(nullptr),
-        vbar_handle(nullptr),
+        plot_handle(nullptr),
+        plot_color_handle(nullptr),
         image_handle(nullptr),
         image_slider_handle(nullptr),
         generate_html_handle(nullptr)
@@ -60,22 +59,16 @@ public:
             throw std::runtime_error("There were problems loading the Visualizer.make_new_figure method.");
         }
 
-        line_handle = PyObject_GetAttrString(py_module, "line");
-        if (line_handle == nullptr)
+        plot_handle = PyObject_GetAttrString(py_module, "plot");
+        if (plot_handle == nullptr)
         {
-            throw std::runtime_error("There were problems loading the Visualizer.line method.");
+            throw std::runtime_error("There were problems loading the Visualizer.plot method.");
         }
 
-        circle_handle = PyObject_GetAttrString(py_module, "circle");
-        if (circle_handle == nullptr)
+        plot_color_handle = PyObject_GetAttrString(py_module, "plot_color");
+        if (plot_color_handle == nullptr)
         {
-            throw std::runtime_error("There were problems loading the Visualizer.circle method.");
-        }
-
-        vbar_handle = PyObject_GetAttrString(py_module, "vbar");
-        if (vbar_handle == nullptr)
-        {
-            throw std::runtime_error("There were problems loading the Visualizer.vbar method.");
+            throw std::runtime_error("There were problems loading the Visualizer.plot_color method.");
         }
 
         image_handle = PyObject_GetAttrString(py_module, "image");
@@ -126,68 +119,7 @@ public:
     }
 
     template <template<typename...> class C1, template<typename...> class C2, typename T1, typename T2>
-    PyObject* line(PyObject* figure, const C1<T1> &datax, const C2<T2> &datay, const std::string &legend = "")
-    {
-        PyObject *args = PyTuple_New(3);
-        if (args == nullptr)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-
-        if (PyTuple_SetItem(args, 0, figure) != 0)
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
-        }
-
-        set_data(args, datax, datay);
-
-        PyObject *kwargs = nullptr;
-        if (!legend.empty())
-        {
-            kwargs = PyDict_New();
-            PyDict_SetItemString(kwargs, "legend", PyUnicode_FromString(legend.c_str()));
-        }
-
-        PyObject *pyRetval = PyObject_Call(line_handle, args, kwargs);
-        if (pyRetval == nullptr)
-        {
-            throw std::runtime_error("Failed to invoke the line_handle!");
-        }
-
-        Py_INCREF(pyRetval);
-        Py_DECREF(args);
-        return pyRetval;
-    }
-
-    template <template<typename...> class C1, template<typename...> class C2, typename T1, typename T2>
-    PyObject* circle(PyObject* figure, const C1<T1> &datax, const C2<T2> &datay, const std::string &legend = "")
-    {
-        PyObject *args = PyTuple_New(3);
-        if (args == nullptr)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-
-        if (PyTuple_SetItem(args, 0, figure) != 0)
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
-        }
-
-        set_data(args, datax, datay);
-
-        PyObject *pyRetval = PyObject_CallObject(circle_handle, args);
-        if (pyRetval == nullptr)
-        {
-            throw std::runtime_error("Failed to invoke the circle_handle!");
-        }
-
-        Py_INCREF(pyRetval);
-        Py_DECREF(args);
-        return pyRetval;
-    }
-
-    template <template<typename...> class C1, template<typename...> class C2, typename T1, typename T2, typename T3>
-    PyObject* vbar(PyObject* figure, const C1<T1> &datax, const C2<T2> &datatops, const T3 width, const std::string &legend = "")
+    PyObject* plot(PyObject* figure, const std::string &plot_type, const C1<T1> &datax, const C2<T2> &datay, const std::string &legend = "")
     {
         PyObject *args = PyTuple_New(4);
         if (args == nullptr)
@@ -200,16 +132,66 @@ public:
             throw std::runtime_error("Could not populate the argument tuple with the figure!");
         }
 
-        set_data(args, datax, datatops);
-        if (PyTuple_SetItem(args, 3, convert_to_python(width)) != 0)
+        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())) != 0)
         {
-            throw std::runtime_error("Could not populate the argument tuple with the width!");
+            throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
         }
 
-        PyObject *pyRetval = PyObject_CallObject(vbar_handle, args);
+        set_vector_data(args, 2, datax);
+        set_vector_data(args, 3, datay);
+        
+        PyObject *kwargs = nullptr;
+        if (!legend.empty())
+        {
+            kwargs = PyDict_New();
+            PyDict_SetItemString(kwargs, "legend", PyUnicode_FromString(legend.c_str()));
+        }
+
+        PyObject *pyRetval = PyObject_Call(plot_handle, args, kwargs);
         if (pyRetval == nullptr)
         {
-            throw std::runtime_error("Failed to invoke the vbar_handle!");
+            throw std::runtime_error("Failed to invoke the plot_handle!");
+        }
+
+        Py_INCREF(pyRetval);
+        Py_DECREF(args);
+        return pyRetval;
+    }
+
+    template <template<typename...> class C1, template<typename...> class C2, template<typename...> class C3, typename T1, typename T2, typename T3>
+    PyObject* plot_color(PyObject* figure, const std::string &plot_type, const C1<T1> &datax, const C2<T2> &datay, const C3<T3> &datacolor, const std::string &legend = "")
+    {
+        PyObject *args = PyTuple_New(5);
+        if (args == nullptr)
+        {
+            throw std::runtime_error("Could not create a Python tuple!");
+        }
+
+        if (PyTuple_SetItem(args, 0, figure) != 0)
+        {
+            throw std::runtime_error("Could not populate the argument tuple with the figure!");
+        }
+
+        if (PyTuple_SetItem(args, 1, PyUnicode_FromString(plot_type.c_str())) != 0)
+        {
+            throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
+        }
+
+        set_vector_data(args, 2, datax);
+        set_vector_data(args, 3, datay);
+        set_vector_data(args, 4, datacolor);
+
+        PyObject *kwargs = nullptr;
+        if (!legend.empty())
+        {
+            kwargs = PyDict_New();
+            PyDict_SetItemString(kwargs, "legend", PyUnicode_FromString(legend.c_str()));
+        }
+
+        PyObject *pyRetval = PyObject_Call(plot_color_handle, args, kwargs);
+        if (pyRetval == nullptr)
+        {
+            throw std::runtime_error("Failed to invoke the plot_color_handle!");
         }
 
         Py_INCREF(pyRetval);
@@ -370,44 +352,33 @@ public:
 
 
 private:
-
-    template <template<typename...> class C1, template<typename...> class C2, typename T1, typename T2>
-    void set_data(PyObject *args, const C1<T1> &datax, const C2<T2> &datay)
+    template <template<typename...> class C, typename T>
+    void set_vector_data(PyObject *args, const std::size_t arg_idx, const C<T> &data)
     {
-        PyObject *xs = PyList_New(datax.size());
-        PyObject *ys = PyList_New(datay.size());
-        if (xs == nullptr || ys == nullptr)
+        PyObject *pd = PyList_New(data.size());
+        if (pd == nullptr)
         {
-            throw std::runtime_error("Could not create a Python list for x or y!");
+            throw std::runtime_error("Could not create a Python list for the input data");
         }
-        if (PyTuple_SetItem(args, 1, xs) != 0)
+        if (PyTuple_SetItem(args, arg_idx, pd) != 0)
         {
-            throw std::runtime_error("Could not populate the argument tuple with the xs!");
-        }
-        if (PyTuple_SetItem(args, 2, ys) != 0)
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the ys!");
+            throw std::runtime_error("Could not populate the argument tuple with the pd!");
         }
 
-        size_t point_count = datax.size();
+        size_t point_count = data.size();
         for (size_t point_index = 0; point_index < point_count; ++point_index)
         {
-            if (PyList_SetItem(xs, point_index, convert_to_python(datax[point_index])) != 0)
+            if (PyList_SetItem(pd, point_index, convert_to_python(data[point_index])) != 0)
             {
-                throw std::runtime_error("Could not set the x for point " + std::to_string(point_index) + "!");
-            }
-            if (PyList_SetItem(ys, point_index, convert_to_python(datay[point_index])) != 0)
-            {
-                throw std::runtime_error("Could not set the y for point " + std::to_string(point_index) + "!");
+                throw std::runtime_error("Could not set the data for point " + std::to_string(point_index) + "!");
             }
         }
     }
 
     PyObject *py_module;
     PyObject *make_new_figure_handle;
-    PyObject *line_handle;
-    PyObject *circle_handle;
-    PyObject *vbar_handle;
+    PyObject *plot_handle;
+    PyObject *plot_color_handle;
     PyObject *image_handle;
     PyObject *image_slider_handle;
     PyObject *generate_html_handle;

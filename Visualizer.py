@@ -1,10 +1,11 @@
 import itertools
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.models import HoverTool, CustomJS, Range1d, Slider
+from bokeh.models import HoverTool, CustomJS, Slider
 from bokeh.plotting import figure, output_file, save, ColumnDataSource
-from bokeh.palettes import Dark2_5 as palette
-colors = itertools.cycle(palette)
+from bokeh.palettes import viridis as palette
+
+colors = itertools.cycle(palette(16))
 
 layout = None
 
@@ -23,54 +24,63 @@ def make_new_figure(title, plot_width=640, plot_height=640):
     return fig
 
 
-def line(fig, x, y, **kwargs):
-    """Create a line object
+def plot(fig, plot_type, x, y, **kwargs):
+    """Create a Glyph Renderer
     
     Arguments:
+        plot_type (str): type of plot to make
         x (list): x data
         y (list): y data
         kwargs: Line properties and Fill properties
     """
+    if plot_type == 'scatter':
+        plot_type = 'circle'
+
     source = ColumnDataSource(data=dict(x=x, y=y))
-    return fig.line(x='x', y='y', source=source, color=colors.__next__(), line_width=1, **kwargs)
+    if plot_type == 'line':
+        return fig.line(x='x', y='y', source=source, color=colors.__next__(), **kwargs)
+    elif plot_type == 'vbar':
+        kwargs['width'] = kwargs.get('width', 1)
+        return fig.line(x='x', top='y', source=source, color=colors.__next__(), **kwargs)
+    else:
+        return fig.scatter(x='x', y='y', source=source, marker=plot_type, color=colors.__next__(), **kwargs)
 
 
-def circle(fig, x, y, **kwargs):
-    """Create a circle object
+def plot_color(fig, plot_type, x, y, c, **kwargs):
+    """Create a Glyph Renderer
     
     Arguments:
+        plot_type (str): type of plot to make
         x (list): x data
         y (list): y data
+        c (list): color data
         kwargs: Line properties and Fill properties
     """
-    source = ColumnDataSource(data=dict(x=x, y=y))
-    return fig.circle(x='x', y='y', source=source, color=colors.__next__(), **kwargs)
+    if plot_type == 'scatter':
+        plot_type = 'circle'
 
-
-def vbar(fig, x, y, width, **kwargs):
-    """Create a vbar object
-    
-    Arguments:
-        x (list): x data
-        y (list): bin values for each bar
-        kwargs: Line properties and Fill properties
-    """
-    source = ColumnDataSource(data=dict(x=x, top=y))
-    return fig.vbar(x=x, top=y, width=width, fill_color='pink', fill_alpha=0.75, **kwargs)
+    p = palette(max(c))
+    source = ColumnDataSource(data=dict(x=x, y=y, color=[p[i-1] for i in c]))
+    if plot_type == 'line':
+        print('plot_color does not support line plots')
+        return None
+    elif plot_type == 'vbar':
+        kwargs['width'] = kwargs.get('width', 1)
+        return fig.vbar(x='x', top='y', color='color', source=source, **kwargs)
+    else:
+        return fig.scatter(x='x', y='y', color='color', marker=plot_type, source=source, **kwargs)
 
 
 def image(fig, image, **kwargs):
     """
     """
     source = ColumnDataSource(data=dict(image=[image], x=[0], y=[0], dw=[len(image[0])], dh=[len(image)]))
-
     max_r = max(len(image[0]), len(image))
-
     fig.x_range.start = 0
     fig.x_range.end = max_r
     fig.y_range.start = 0
     fig.y_range.end = max_r
-    return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source, palette="Spectral11")
+    return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source)
 
 
 def image_slider(fig, images):
@@ -93,31 +103,16 @@ source.data['dh']    = [source2.data['dh'][cb_obj.value]];
 source.change.emit();""")
 
     slider.js_on_change('value', callback)
-    return make_layout(fig, slider)
+    return column(fig, row(slider))
 
-def make_layout(fig, obj):
-    return column(fig, row(obj))
 
 def generate_html(obj, filename, **kwargs):
     """Generate and save the HTML of the figure
-    cd o    
+
     Arguments:
+        obj: BOkeh object or figure to be graphed
         filename (str): name of the file to save the figure to
         kwargs: additional output properties
     """
     output_file(filename, **kwargs)
     save(obj)
-
-
-if __name__ == '__main__':
-    import random
-    data = []
-    for i in range(10):
-        data.append([])
-        for _ in range(10):
-            data[-1].append([random.randint(0,10), random.randint(0,10)])
-
-    f = make_new_figure('test')
-    s = image_slider(f, data)
-    l = make_layout(f, s)
-    generate_html(l, 'test.html')
