@@ -24,7 +24,8 @@ int main()
             y_data.push_back(dis(eng));
             c_data.push_back(dis(eng));
         }
-        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data, py::kwarg("radius", 4));
+        pyvis.plot(figure, "line", x_data, y_data, py::kwarg("line_width", 2));
+        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data, py::kwarg("radius", 2));
         pyvis.generate_html(figure, "test.html");
     }
     {

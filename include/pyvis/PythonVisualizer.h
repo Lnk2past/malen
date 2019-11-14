@@ -213,6 +213,7 @@ private:
         PyObject *pyRetval = PyObject_Call(handle, args, kwargs);
         if (!pyRetval)
         {
+            PyErr_PrintEx(1);
             throw std::runtime_error("Failed to invoke the " +  handle_name + " handle!");
         }
         Py_INCREF(pyRetval);
