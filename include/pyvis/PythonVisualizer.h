@@ -10,31 +10,22 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
-#include <tuple>
+#include <stdexcept>
 #include <vector>
+
+#define _M_QUOTE(seq) "\""#seq"\""
+#define _M_PY_SET_ARGUMENT(args, idx, obj) set_argument(args, idx, obj, _M_QUOTE(obj))
+#define _M_PY_CALL_OBJECT_(handle, args) py_call_object(handle, args, nullptr, _M_QUOTE(handle))
+#define _M_PY_CALL_OBJECT_KW(handle, args, kwargs) py_call_object(handle, args, kwargs, _M_QUOTE(handle))
+
+#define GET_MACRO(_1,_2,_3,NAME,...) NAME
+#define _M_PY_CALL_OBJECT(...) GET_MACRO(__VA_ARGS__, _M_PY_CALL_OBJECT_KW, _M_PY_CALL_OBJECT_, )(__VA_ARGS__)
 
 namespace py
 {
-struct Kwargs
+namespace
 {
-    template <typename KT, typename VT>
-    kwargs& build(const KT &key, const VT &val)
-    {
-        if (!kwargs)
-        {
-            kwargs = PyDict_New();
-        }
-        if (PyDict_SetItem(kwargs, convert_to_python(key), convert_to_python(val)))
-        {
-            throw std::runtime_error("Failed add key/value pair to kwargs!");
-        }
-        return *this;
-    }
-    PyObject *kwargs = nullptr;
-};
-
-namespace {
-constexpr PyObject* convert_to_python(PyObject *c)
+inline PyObject* convert_to_python(PyObject* c)
 {
     return c;
 }
@@ -67,30 +58,6 @@ inline PyObject* convert_to_python(const C<T> &c)
     }
     return py_list;
 }
-
-inline void pack_arguments(PyObject *, std::size_t)
-{}
-
-template <typename T, typename ...V>
-inline void pack_arguments(PyObject *args, std::size_t idx, Kwargs &kw, V... v)
-{
-    if (PyTuple_SetItem(args, idx, convert_to_python(t)))
-    {
-        throw std::runtime_error("Could not pack the title into the argument tuple!");
-    }
-    pack_arguments(args, idx+1, v...);
-}
-
-template <typename T, typename ...V>
-inline void pack_arguments(PyObject *args, std::size_t idx, T t, V... v)
-{
-    if (PyTuple_SetItem(args, idx, convert_to_python(t)))
-    {
-        throw std::runtime_error("Could not pack the title into the argument tuple!");
-    }
-    pack_arguments(args, idx+1, v...);
-}
-
 }
 
 class PythonVisualizer
@@ -165,186 +132,111 @@ public:
 
     PyObject* make_new_figure(const std::string &title)
     {
-        PyObject *args = PyTuple_New(1);
-        if (!args)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-
-        if (PyTuple_SetItem(args, 0, convert_to_python(title)))
-        {
-            throw std::runtime_error("Could not pack the title into the argument tuple!");
-        }
-
-        PyObject *pyRetval = PyObject_CallObject(make_new_figure_handle, args);
-        if (!pyRetval)
-        {
-            throw std::runtime_error("Failed to invoke the make_new_figure_handle!");
-        }
-
-        Py_INCREF(pyRetval);
-        return pyRetval;
+        PyObject *args = make_py_tuple(1);
+        _M_PY_SET_ARGUMENT(args, 0, title);
+        return _M_PY_CALL_OBJECT(make_new_figure_handle, args);
     }
 
-    template <typename... V>
-    PyObject* plot(V... v)
+    template <template<typename...> class C1, template<typename...> class C2, typename T1, typename T2>
+    PyObject* plot(PyObject* figure, const std::string &plot_type, const C1<T1> &datax, const C2<T2> &datay, PyObject *kwargs=nullptr)
     {
-        PyObject *args = PyTuple_New(sizeof...(v));
-        
-        if (!args)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-        pack_arguments(args, 0, v...);
-
-        PyObject *pyRetval = PyObject_Call(plot_handle, args, nullptr);
-        if (pyRetval == nullptr)
-        {
-            throw std::runtime_error("Failed to invoke the plot_handle!");
-        }
-
-        Py_INCREF(pyRetval);
-        Py_DECREF(args);
-        return pyRetval;
+        PyObject *args = make_py_tuple(4);
+        _M_PY_SET_ARGUMENT(args, 0, figure);
+        _M_PY_SET_ARGUMENT(args, 1, plot_type);
+        _M_PY_SET_ARGUMENT(args, 2, datax);
+        _M_PY_SET_ARGUMENT(args, 3, datay);
+        return _M_PY_CALL_OBJECT(plot_handle, args, kwargs);
     }
 
     template <template<typename...> class C1, template<typename...> class C2, template<typename...> class C3, typename T1, typename T2, typename T3>
     PyObject* plot_color(PyObject* figure, const std::string &plot_type, const C1<T1> &datax, const C2<T2> &datay, const C3<T3> &datacolor, PyObject *kwargs=nullptr)
     {
-        PyObject *args = PyTuple_New(5);
-        if (!args)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-
-        if (PyTuple_SetItem(args, 0, figure))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
-        }
-
-        if (PyTuple_SetItem(args, 1, convert_to_python(plot_type)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
-        }
-
-        if (PyTuple_SetItem(args, 2, convert_to_python(datax)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the x-data!");
-        }
-
-        if (PyTuple_SetItem(args, 3, convert_to_python(datay)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the y-data!");
-        }
-
-        if (PyTuple_SetItem(args, 4, convert_to_python(datacolor)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the color-data!");
-        }
-
-        PyObject *pyRetval = PyObject_Call(plot_color_handle, args, kwargs);
-        if (!pyRetval)
-        {
-            throw std::runtime_error("Failed to invoke the plot_color_handle!");
-        }
-
-        Py_INCREF(pyRetval);
-        Py_DECREF(args);
-        return pyRetval;
+        PyObject *args = make_py_tuple(5);
+        _M_PY_SET_ARGUMENT(args, 0, figure);
+        _M_PY_SET_ARGUMENT(args, 1, plot_type);
+        _M_PY_SET_ARGUMENT(args, 2, datax);
+        _M_PY_SET_ARGUMENT(args, 3, datay);
+        _M_PY_SET_ARGUMENT(args, 4, datacolor);
+        return _M_PY_CALL_OBJECT(plot_color_handle, args, kwargs);
     }
 
     template <template<typename...> class C, typename T>
     PyObject* image(PyObject* figure, const C<C<T>> &image)
     {
-        PyObject *args = PyTuple_New(2);
-        if (!args)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-
-        if (PyTuple_SetItem(args, 0, figure))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
-        }
-
-        if (PyTuple_SetItem(args, 1, convert_to_python(image)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the image!");
-        }
-
-        PyObject *pyRetval = PyObject_CallObject(image_handle, args);
-        if (!pyRetval)
-        {
-            throw std::runtime_error("Failed to invoke the image_handle!");
-        }
-
-        Py_INCREF(pyRetval);
-        Py_DECREF(args);
-        return pyRetval;
+        PyObject *args = make_py_tuple(2);
+        _M_PY_SET_ARGUMENT(args, 0, figure);
+        _M_PY_SET_ARGUMENT(args, 1, image);
+        return _M_PY_CALL_OBJECT(image_handle, args);
     }
 
     template <template<typename...> class C, typename T>
     PyObject* image_slider(PyObject* figure, const C<C<C<T>>> &images)
     {
-        PyObject *args = PyTuple_New(2);
+        PyObject *args = make_py_tuple(2);
+        _M_PY_SET_ARGUMENT(args, 0, figure);
+        _M_PY_SET_ARGUMENT(args, 1, images);
+        return _M_PY_CALL_OBJECT(image_slider_handle, args);
+    }
+
+    void generate_html(PyObject *figure, const std::string &filename)
+    {
+        PyObject *args = make_py_tuple(2);
+        _M_PY_SET_ARGUMENT(args, 0, figure);
+        _M_PY_SET_ARGUMENT(args, 1, filename);
+        _M_PY_CALL_OBJECT(generate_html_handle, args);
+    }
+
+    template<typename KT, typename VT>
+    PyObject* make_kwarg(const KT &key, const VT &val, PyObject *kw=nullptr)
+    {
+        if (!kw)
+        {
+            kw = PyDict_New();
+        }
+        if (PyDict_SetItem(kw, convert_to_python(key), convert_to_python(val)))
+        {
+            throw std::runtime_error("Failed add key/value pair to kwargs!");
+        }
+        return kw;
+    }
+
+private:
+    inline void add_to_path(const std::string &path)
+    {
+        PyList_Append(PySys_GetObject("path"), convert_to_python(path));
+    }
+
+    inline PyObject* make_py_tuple(std::size_t size)
+    {
+        PyObject *args = PyTuple_New(size);
         if (!args)
         {
             throw std::runtime_error("Could not create a Python tuple!");
         }
+        return args;
+    }
 
-        if (PyTuple_SetItem(args, 0, figure))
+    template<typename T>
+    inline void set_argument(PyObject *args, std::size_t idx, const T &t, const std::string &obj_name)
+    {
+        if (PyTuple_SetItem(args, idx, convert_to_python(t)))
         {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
+            throw std::runtime_error("Could not pack the " + obj_name + " into the argument tuple!");
         }
+    }
 
-        if (PyTuple_SetItem(args, 1, convert_to_python(images)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the image!");
-        }
-
-        PyObject *pyRetval = PyObject_CallObject(image_slider_handle, args);
+    inline PyObject* py_call_object(PyObject *handle, PyObject *args, PyObject *kwargs, const std::string &handle_name)
+    {
+        PyObject *pyRetval = PyObject_Call(handle, args, kwargs);
         if (!pyRetval)
         {
-            throw std::runtime_error("Failed to invoke the image_slider_handle!");
+            throw std::runtime_error("Failed to invoke the " +  handle_name + "!");
         }
-
         Py_INCREF(pyRetval);
         Py_DECREF(args);
         return pyRetval;
     }
 
-    void generate_html(PyObject *figure, const std::string &filename)
-    {
-        PyObject *args = PyTuple_New(2);
-        if (!args)
-        {
-            throw std::runtime_error("Could not create a Python tuple!");
-        }
-
-        if (PyTuple_SetItem(args, 0, figure))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
-        }
-        if (PyTuple_SetItem(args, 1, convert_to_python(filename)))
-        {
-            throw std::runtime_error("Could not pack the filename into the argument tuple!");
-        }
-
-        PyObject *pyRetval = PyObject_CallObject(generate_html_handle, args);
-        if (!pyRetval)
-        {
-            throw std::runtime_error("Failed to invoke the generate_html_handle!");
-        }
-
-        Py_DECREF(pyRetval);
-    }
-
-    void add_to_path(const std::string &path)
-    {
-        PyList_Append(PySys_GetObject("path"), convert_to_python(path));
-    }
-
-private:
     PyObject *py_module;
     PyObject *make_new_figure_handle;
     PyObject *plot_handle;
