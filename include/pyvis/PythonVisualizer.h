@@ -10,12 +10,35 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
-#include <stdexcept>
+#include <tuple>
 #include <vector>
 
 namespace py
 {
+struct Kwargs
+{
+    template <typename KT, typename VT>
+    kwargs& build(const KT &key, const VT &val)
+    {
+        if (!kwargs)
+        {
+            kwargs = PyDict_New();
+        }
+        if (PyDict_SetItem(kwargs, convert_to_python(key), convert_to_python(val)))
+        {
+            throw std::runtime_error("Failed add key/value pair to kwargs!");
+        }
+        return *this;
+    }
+    PyObject *kwargs = nullptr;
+};
+
 namespace {
+constexpr PyObject* convert_to_python(PyObject *c)
+{
+    return c;
+}
+
 inline PyObject* convert_to_python(const int c)
 {
     return PyLong_FromLong(c);
@@ -44,6 +67,30 @@ inline PyObject* convert_to_python(const C<T> &c)
     }
     return py_list;
 }
+
+inline void pack_arguments(PyObject *, std::size_t)
+{}
+
+template <typename T, typename ...V>
+inline void pack_arguments(PyObject *args, std::size_t idx, Kwargs &kw, V... v)
+{
+    if (PyTuple_SetItem(args, idx, convert_to_python(t)))
+    {
+        throw std::runtime_error("Could not pack the title into the argument tuple!");
+    }
+    pack_arguments(args, idx+1, v...);
+}
+
+template <typename T, typename ...V>
+inline void pack_arguments(PyObject *args, std::size_t idx, T t, V... v)
+{
+    if (PyTuple_SetItem(args, idx, convert_to_python(t)))
+    {
+        throw std::runtime_error("Could not pack the title into the argument tuple!");
+    }
+    pack_arguments(args, idx+1, v...);
+}
+
 }
 
 class PythonVisualizer
@@ -139,36 +186,18 @@ public:
         return pyRetval;
     }
 
-    template <template<typename...> class C1, template<typename...> class C2, typename T1, typename T2>
-    PyObject* plot(PyObject* figure, const std::string &plot_type, const C1<T1> &datax, const C2<T2> &datay, PyObject *kwargs=nullptr)
+    template <typename... V>
+    PyObject* plot(V... v)
     {
-        PyObject *args = PyTuple_New(4);
+        PyObject *args = PyTuple_New(sizeof...(v));
+        
         if (!args)
         {
             throw std::runtime_error("Could not create a Python tuple!");
         }
+        pack_arguments(args, 0, v...);
 
-        if (PyTuple_SetItem(args, 0, figure))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the figure!");
-        }
-
-        if (PyTuple_SetItem(args, 1, convert_to_python(plot_type)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the plot_type!");
-        }
-
-        if (PyTuple_SetItem(args, 2, convert_to_python(datax)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the x-data!");
-        }
-
-        if (PyTuple_SetItem(args, 3, convert_to_python(datay)))
-        {
-            throw std::runtime_error("Could not populate the argument tuple with the y-data!");
-        }
-
-        PyObject *pyRetval = PyObject_Call(plot_handle, args, kwargs);
+        PyObject *pyRetval = PyObject_Call(plot_handle, args, nullptr);
         if (pyRetval == nullptr)
         {
             throw std::runtime_error("Failed to invoke the plot_handle!");
@@ -308,20 +337,6 @@ public:
         }
 
         Py_DECREF(pyRetval);
-    }
-
-    template<typename KT, typename VT>
-    PyObject* kwargs(const KT &key, const VT &val, PyObject *kw=nullptr)
-    {
-        if (!kw)
-        {
-            kw = PyDict_New();
-        }
-        if (PyDict_SetItem(kw, convert_to_python(key), convert_to_python(val)))
-        {
-            throw std::runtime_error("Failed add key/value pair to kwargs!");
-        }
-        return kw;
     }
 
     void add_to_path(const std::string &path)
