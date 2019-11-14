@@ -24,7 +24,7 @@ int main()
             y_data.push_back(dis(eng));
             c_data.push_back(dis(eng));
         }
-        pyvis.plot(figure, "scatter", x_data, y_data);
+        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data);
         pyvis.generate_html(figure, "test.html");
     }
     {
