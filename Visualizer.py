@@ -11,7 +11,7 @@ layout = None
 
 def make_new_figure(title, plot_width=640, plot_height=640):
     """Create a new figure
-    
+
     Arguments:
         title (str): name of the figure
         plot_width (int): width in pixels
@@ -26,7 +26,7 @@ def make_new_figure(title, plot_width=640, plot_height=640):
 
 def plot(fig, plot_type, x, y, **kwargs):
     """Create a Glyph Renderer
-    
+
     Arguments:
         plot_type (str): type of plot to make
         x (list): x data
@@ -48,7 +48,7 @@ def plot(fig, plot_type, x, y, **kwargs):
 
 def plot_color(fig, plot_type, x, y, c, **kwargs):
     """Create a Glyph Renderer
-    
+
     Arguments:
         plot_type (str): type of plot to make
         x (list): x data
@@ -118,3 +118,11 @@ def generate_html(obj, filename, **kwargs):
     """
     output_file(filename, **kwargs)
     save(obj)
+
+if __name__ == '__main__':
+    import random
+    x = [random.randint(0,10) for _ in range(100)]
+    y = [random.randint(0,10) for _ in range(100)]
+    f = make_new_figure('test')
+    s = plot(f, 'scatter', x, y)
+    generate_html(f, 'test.html')

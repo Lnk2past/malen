@@ -5,7 +5,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-#include <utility>
 
 int main()
 {
@@ -24,7 +23,8 @@ int main()
             y_data.push_back(dis(eng));
             c_data.push_back(dis(eng));
         }
-        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data, pyvis.kwargs("legend", "test!"));
+        pyvis.plot(figure, "line", x_data, y_data, py::kwarg("line_width", 2));
+        pyvis.plot_color(figure, "scatter", x_data, y_data, c_data, py::kwarg("radius", 2));
         pyvis.generate_html(figure, "test.html");
     }
     {
