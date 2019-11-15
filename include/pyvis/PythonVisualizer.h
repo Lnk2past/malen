@@ -26,6 +26,16 @@ inline PyObject* convert_to_python(const int c)
     return PyLong_FromLong(c);
 }
 
+inline PyObject* convert_to_python(const unsigned int c)
+{
+    return PyLong_FromUnsignedLong(c);
+}
+
+inline PyObject* convert_to_python(const unsigned long c)
+{
+    return PyLong_FromUnsignedLong(c);
+}
+
 inline PyObject* convert_to_python(const double c)
 {
     return PyFloat_FromDouble(c);
@@ -57,17 +67,16 @@ std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VT &val)
     return {convert_to_python(key), convert_to_python(val)};
 }
 
+template <typename KT, template<typename...> class VC, typename VT>
+std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VC<VT> &val)
+{
+    return {convert_to_python(key), convert_to_python(val)};
+}
+
 class PythonVisualizer
 {
 public:
-    PythonVisualizer(const std::vector<std::string> &additional_paths = std::vector<std::string>()) :
-        py_module(nullptr),
-        make_new_figure_handle(nullptr),
-        plot_handle(nullptr),
-        plot_color_handle(nullptr),
-        image_handle(nullptr),
-        image_slider_handle(nullptr),
-        generate_html_handle(nullptr)
+    PythonVisualizer(const std::vector<std::string> &additional_paths = std::vector<std::string>())
     {
         Py_Initialize();
         add_to_path(".");
@@ -83,9 +92,9 @@ public:
 
         make_new_figure_handle = load_method("make_new_figure");
         plot_handle = load_method("plot");
-        plot_color_handle = load_method("plot_color");
         image_handle = load_method("image");
-        image_slider_handle = load_method("image_slider");
+        slider_handle = load_method("slider");
+        layout_handle = load_method("layout");
         generate_html_handle = load_method("generate_html");
     }
 
@@ -108,13 +117,6 @@ public:
         return py_call_object(plot_handle, __FUNCTION__, kwargs, figure, plot_type, datax, datay);
     }
 
-    template <template<typename...> class C1, template<typename...> class C2, template<typename...> class C3, typename T1, typename T2, typename T3, typename... KW>
-    PyObject* plot_color(PyObject* figure, const std::string &plot_type, const C1<T1> &datax, const C2<T2> &datay, const C3<T3> &datacolor, KW... kw)
-    {
-        auto kwargs = build_kwargs(nullptr, kw...);
-        return py_call_object(plot_color_handle, __FUNCTION__, kwargs, figure, plot_type, datax, datay, datacolor);
-    }
-
     template <template<typename...> class C, typename T, typename... KW>
     PyObject* image(PyObject* figure, const C<C<T>> &image, KW... kw)
     {
@@ -122,11 +124,16 @@ public:
         return py_call_object(image_handle, __FUNCTION__, kwargs, figure, image);
     }
 
-    template <template<typename...> class C, typename T, typename... KW>
-    PyObject* image_slider(PyObject* figure, const C<C<C<T>>> &images, KW... kw)
+    template <typename... KW>
+    PyObject* slider(PyObject* renderer, const std::string &title, const std::size_t start, const std::size_t end, KW... kw)
     {
         auto kwargs = build_kwargs(nullptr, kw...);
-        return py_call_object(image_slider_handle, __FUNCTION__, kwargs, figure, images);
+        return py_call_object(slider_handle, __FUNCTION__, kwargs, renderer, title, start, end);
+    }
+
+    PyObject* layout(PyObject* obj1, PyObject *obj2)
+    {
+        return py_call_object(layout_handle, __FUNCTION__, nullptr, obj1, obj2);
     }
 
     template <typename... KW>
@@ -221,12 +228,12 @@ private:
         return pyRetval;
     }
 
-    PyObject *py_module;
-    PyObject *make_new_figure_handle;
-    PyObject *plot_handle;
-    PyObject *plot_color_handle;
-    PyObject *image_handle;
-    PyObject *image_slider_handle;
-    PyObject *generate_html_handle;
+    PyObject *py_module = nullptr;
+    PyObject *make_new_figure_handle = nullptr;
+    PyObject *plot_handle = nullptr;
+    PyObject *image_handle = nullptr;
+    PyObject *slider_handle = nullptr;
+    PyObject *layout_handle = nullptr;
+    PyObject *generate_html_handle = nullptr;
 };
 }
