@@ -56,12 +56,6 @@ def image(fig, image, **kwargs):
     """
     """
     source = ColumnDataSource(data=dict(image=[image], x=[0], y=[0], dw=[len(image[0])], dh=[len(image)]))
-    max_r = max(len(image[0]), len(image))
-    fig.x_range.start = 0
-    fig.x_range.end = max_r
-    fig.y_range.start = 0
-    fig.y_range.end = max_r
-    kwargs['palette'] = kwargs.get('palette', 'Spectral11')
     return fig.image(image='image', x='x', y='y', dw='dw', dh='dh', source=source, **kwargs)
 
 
