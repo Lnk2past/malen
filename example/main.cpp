@@ -52,7 +52,7 @@ int main()
             }
         }
         auto sc = pyvis.image(figure, data[0]);
-        auto slider = pyvis.slider(sc, "Frame", 0, 99, py::kwarg("image", data));
+        auto slider = pyvis.slider(sc, "Frame", 0, data.size()-1, py::kwarg("image", data));
         auto layout = pyvis.layout(figure, slider);
         pyvis.generate_html(layout, "test.html");
     }
