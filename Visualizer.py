@@ -1,14 +1,15 @@
 import itertools
 import bokeh
+from bokeh import events
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
 from bokeh.models import HoverTool, CustomJS, Slider, ColorBar
 from bokeh.models.mappers import *
 from bokeh.models.tickers import *
+from bokeh.models.widgets import Button
 from bokeh.plotting import figure, output_file, save, ColumnDataSource
 from bokeh.palettes import viridis as palette
 
-colors = itertools.cycle(palette(16))
 
 def make_new_figure(title, plot_width=720, plot_height=640, **kwargs):
     """Create a new figure
@@ -62,13 +63,25 @@ def image(fig, image, **kwargs):
 def slider(renderer, title, start, end, **kwargs):
     js_callback_template = 'source.data["{key}"] = {lb}source2.data["{key}"][cb_obj.value]{rb};'
     lb, rb = ['[', ']'] if isinstance(renderer.glyph, bokeh.models.glyphs.Image) else ['','']
-    js_callback_source = '\n'.join(js_callback_template.format(key=key, lb=lb, rb=rb) for key in kwargs)
-    js_callback_source += '\nsource.change.emit();'
+    js_slider_callback_source = '\n'.join(js_callback_template.format(key=key, lb=lb, rb=rb) for key in kwargs)
+    js_slider_callback_source += '\nsource.change.emit();'
     source2 = ColumnDataSource(data=kwargs)
     slider = Slider(start=start, end=end, value=0, step=1, title=title)
-    callback = CustomJS(args=dict(source=renderer.data_source, source2=source2), code=js_callback_source)
-    slider.js_on_change('value', callback)
-    return slider
+    slider_callback = CustomJS(args=dict(source=renderer.data_source, source2=source2), code=js_slider_callback_source)
+    slider.js_on_change('value', slider_callback)
+
+    js_button_callback_source ='''
+for (i=slider.start; i <= slider.end; i++){
+    setTimeout((source, slider, i) => {
+        slider.value = i;
+        source.change.emit();
+    }, 20 * i, source, slider, i);
+}
+'''
+    button_callback = CustomJS(args=dict(slider=slider, source=renderer.data_source, source2=source2), code=js_button_callback_source)
+    button = Button(label="Play", button_type="success")
+    button.js_on_event(events.ButtonClick, button_callback)
+    return row(slider, button)
 
 
 def ticker(ticker_type, **kwargs):
@@ -120,7 +133,7 @@ def color_bar(figure, color_mapper, **kwargs):
 
 
 def layout(obj1, obj2):
-    return column(obj1, row(obj2))
+    return column(obj1, obj2)
 
 
 def generate_html(obj, filename, **kwargs):
