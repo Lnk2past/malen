@@ -2,15 +2,15 @@ import itertools
 import bokeh
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.models import HoverTool, CustomJS, Slider
+from bokeh.models import HoverTool, CustomJS, Slider, ColorBar
+from bokeh.models.mappers import *
+from bokeh.models.tickers import *
 from bokeh.plotting import figure, output_file, save, ColumnDataSource
 from bokeh.palettes import viridis as palette
 
 colors = itertools.cycle(palette(16))
 
-layout = None
-
-def make_new_figure(title, plot_width=640, plot_height=640, **kwargs):
+def make_new_figure(title, plot_width=720, plot_height=640, **kwargs):
     """Create a new figure
 
     Arguments:
@@ -69,6 +69,54 @@ def slider(renderer, title, start, end, **kwargs):
     callback = CustomJS(args=dict(source=renderer.data_source, source2=source2), code=js_callback_source)
     slider.js_on_change('value', callback)
     return slider
+
+
+def ticker(ticker_type, **kwargs):
+    if ticker_type == 'FixedTicker':
+        return FixedTicker(**kwargs)
+    if ticker_type == 'AdaptiveTicker':
+        return AdaptiveTicker(**kwargs)
+    if ticker_type == 'CompositeTicker':
+        return CompositeTicker(**kwargs)
+    if ticker_type == 'SingleIntervalTicker':
+        return SingleIntervalTicker(**kwargs)
+    if ticker_type == 'DaysTicker':
+        return DaysTicker(**kwargs)
+    if ticker_type == 'MonthsTicker':
+        return MonthsTicker(**kwargs)
+    if ticker_type == 'YearsTicker':
+        return YearsTicker(**kwargs)
+    if ticker_type == 'BasicTicker':
+        return BasicTicker(**kwargs)
+    if ticker_type == 'LogTicker':
+        return LogTicker(**kwargs)
+    if ticker_type == 'MercatorTicker':
+        return MercatorTicker(**kwargs)
+    if ticker_type == 'CategoricalTicker':
+        return CategoricalTicker(**kwargs)
+    if ticker_type == 'DatetimeTicker':
+        return DatetimeTicker(**kwargs)
+    else:
+        print('Unknown ticker_type ', ticker_type)
+
+
+def color_mapper(mapper_type, **kwargs):
+    if mapper_type == 'CategoricalColorMapper':
+        return CategoricalColorMapper(**kwargs)
+    if mapper_type == 'CategoricalMarkerMapper':
+        return CategoricalMarkerMapper(**kwargs)
+    if mapper_type == 'CategoricalPatternMapper':
+        return CategoricalPatternMapper(**kwargs)
+    if mapper_type == 'LinearColorMapper':
+        return LinearColorMapper(**kwargs)
+    if mapper_type == 'LogColorMapper':
+        return LogColorMapper(**kwargs)
+    else:
+        print('Unknown mapper_type ', mapper_type)
+
+
+def color_bar(figure, color_mapper, **kwargs):
+    figure.add_layout(ColorBar(color_mapper=color_mapper, **kwargs), 'left')
 
 
 def layout(obj1, obj2):

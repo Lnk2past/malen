@@ -87,6 +87,7 @@ public:
         py_module = PyImport_ImportModule("Visualizer");
         if (!py_module)
         {
+            PyErr_PrintEx(1);
             throw std::runtime_error("There were problems loading the Visualizer module.");
         }
 
@@ -94,6 +95,9 @@ public:
         plot_handle = load_method("plot");
         image_handle = load_method("image");
         slider_handle = load_method("slider");
+        ticker_handle = load_method("ticker");
+        color_mapper_handle = load_method("color_mapper");
+        color_bar_handle = load_method("color_bar");
         layout_handle = load_method("layout");
         generate_html_handle = load_method("generate_html");
     }
@@ -129,6 +133,27 @@ public:
     {
         auto kwargs = build_kwargs(nullptr, kw...);
         return py_call_object(slider_handle, __FUNCTION__, kwargs, renderer, title, start, end);
+    }
+
+    template <typename... KW>
+    PyObject* ticker(const std::string &ticker_type, KW... kw)
+    {
+        auto kwargs = build_kwargs(nullptr, kw...);
+        return py_call_object(ticker_handle, __FUNCTION__, kwargs, ticker_type);
+    }
+
+    template <typename... KW>
+    PyObject* color_mapper(const std::string &mapper_type, KW... kw)
+    {
+        auto kwargs = build_kwargs(nullptr, kw...);
+        return py_call_object(color_mapper_handle, __FUNCTION__, kwargs, mapper_type);
+    }
+
+    template <typename... KW>
+    void color_bar(PyObject *figure, KW... kw)
+    {
+        auto kwargs = build_kwargs(nullptr, kw...);
+        py_call_object(color_bar_handle, __FUNCTION__, kwargs, figure);
     }
 
     PyObject* layout(PyObject* obj1, PyObject *obj2)
@@ -233,6 +258,9 @@ private:
     PyObject *plot_handle = nullptr;
     PyObject *image_handle = nullptr;
     PyObject *slider_handle = nullptr;
+    PyObject *ticker_handle = nullptr;
+    PyObject *color_mapper_handle = nullptr;
+    PyObject *color_bar_handle = nullptr;
     PyObject *layout_handle = nullptr;
     PyObject *generate_html_handle = nullptr;
 };
