@@ -36,20 +36,19 @@ def plot(fig, plot_type, x, y, **kwargs):
         x (list): x data
         y (list): y data
         kwargs: Line properties and Fill properties
+
+    Returns:
+        The figure/renderer from plotting.
     """
     source = ColumnDataSource(data=dict(x=x, y=y))
-    if 'color' in kwargs and isinstance(kwargs['color'], list):
-        p = palette(max(kwargs['color']))
-        source.add([p[i-1] for i in kwargs['color']], 'color')
-        del kwargs['color']
-
+    _pack_column_data_source(kwargs, source)
     source_keys = {k:k for k in source.data}
 
     if plot_type == 'line':
         return fig.line(**source_keys, source=source, **kwargs)
     elif plot_type == 'vbar':
         kwargs['width'] = kwargs.get('width', 1)
-        return fig.line(**source_keys, source=source, **kwargs)
+        return fig.vbar(**source_keys, source=source, **kwargs)
     else:
         return fig.scatter(**source_keys, marker=plot_type, source=source, **kwargs)
 
@@ -61,6 +60,9 @@ def image(fig, image, **kwargs):
 
 
 def slider(renderer, title, start, end, **kwargs):
+    """
+    TBD
+    """
     js_callback_template = 'source.data["{key}"] = {lb}source2.data["{key}"][cb_obj.value]{rb};'
     lb, rb = ['[', ']'] if isinstance(renderer.glyph, bokeh.models.glyphs.Image) else ['','']
     js_slider_callback_source = '\n'.join(js_callback_template.format(key=key, lb=lb, rb=rb) for key in kwargs)
@@ -85,6 +87,9 @@ for (i=slider.start; i <= slider.end; i++){
 
 
 def ticker(ticker_type, **kwargs):
+    """
+    TBD
+    """
     if ticker_type == 'FixedTicker':
         return FixedTicker(**kwargs)
     if ticker_type == 'AdaptiveTicker':
@@ -114,6 +119,9 @@ def ticker(ticker_type, **kwargs):
 
 
 def color_mapper(mapper_type, **kwargs):
+    """
+    TBD
+    """
     if mapper_type == 'CategoricalColorMapper':
         return CategoricalColorMapper(**kwargs)
     if mapper_type == 'CategoricalMarkerMapper':
@@ -129,10 +137,21 @@ def color_mapper(mapper_type, **kwargs):
 
 
 def color_bar(figure, color_mapper, **kwargs):
+    """
+    Add a ColorBar to the input figure
+
+    Arguments:
+        figure (bokeh.plotting.GlyphRenderer): figure to add the ColorBar to
+        color_mapper (bokeh.models.mappers.Mapper): mapper object
+        kwargs: additional ColorBar properties
+    """
     figure.add_layout(ColorBar(color_mapper=color_mapper, **kwargs), 'left')
 
 
 def layout(obj1, obj2):
+    """
+    Pack the objects into a column
+    """
     return column(obj1, obj2)
 
 
@@ -146,6 +165,23 @@ def generate_html(obj, filename, **kwargs):
     """
     output_file(filename, **kwargs)
     save(obj)
+
+
+def _pack_column_data_source(kwargs, source):
+    """
+    TBD
+    """
+    if 'size' in kwargs and isinstance(kwargs['size'], list):
+        source.add(kwargs['size'], 'size')
+        del kwargs['size']
+    if 'color' in kwargs and isinstance(kwargs['color'], list):
+        p = palette(max(kwargs['color']))
+        source.add([p[i-1] for i in kwargs['color']], 'color')
+        del kwargs['color']
+    if 'marker' in kwargs and isinstance(kwargs['marker'], list):
+        source.add(kwargs['marker'], 'marker')
+        del kwargs['marker']
+
 
 if __name__ == '__main__':
     import random
