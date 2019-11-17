@@ -249,7 +249,8 @@ private:
             throw std::runtime_error("Failed to invoke the " +  handle_name + " handle!");
         }
         Py_INCREF(pyRetval);
-        Py_DECREF(args);
+        // Py_DECREF(args);
+        // TODO: Determine issue with this Py_DECREF...
         return pyRetval;
     }
 
