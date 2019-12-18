@@ -12,7 +12,7 @@ int main()
     std::mt19937 eng(11);
     std::uniform_int_distribution<int> dis(0,100);
 
-    malen::Malen mln({"../.."});
+    malen::Malen mln({".."});
     auto figure = mln.make_new_figure("Test Plot", malen::kwarg("x_range", std::vector<int>{0,100}), malen::kwarg("y_range", std::vector<int>{0,100}));
     // {
     //     auto rgen = [&eng, &dis]()
