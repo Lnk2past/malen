@@ -27,11 +27,11 @@ public:
         {
             add_to_path(path);
         }
-        py_module = PyImport_ImportModule("Visualizer");
+        py_module = PyImport_ImportModule("malen");
         if (!py_module)
         {
             PyErr_PrintEx(1);
-            throw std::runtime_error("There were problems loading the Visualizer module.");
+            throw std::runtime_error("There were problems loading the malen module.");
         }
 
         make_new_figure_handle = load_method("make_new_figure");
@@ -125,7 +125,7 @@ private:
         PyObject *handle = PyObject_GetAttrString(py_module, method_name.c_str());
         if (!handle)
         {
-            throw std::runtime_error("There were problems loading the Visualizer." + method_name + " method.");
+            throw std::runtime_error("There were problems loading the malen." + method_name + " method.");
         }
         return handle;
     }
