@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace py
+namespace malen
 {
 inline PyObject* convert_to_python(PyObject* c)
 {

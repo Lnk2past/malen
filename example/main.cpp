@@ -1,7 +1,7 @@
 // main.cpp
 // contains samplue usage of PythonVisualizer.h
 
-#include "pyvis/PythonVisualizer.h"
+#include "malen/malen.h"
 #include <algorithm>
 #include <iostream>
 #include <random>
@@ -12,8 +12,8 @@ int main()
     std::mt19937 eng(11);
     std::uniform_int_distribution<int> dis(0,100);
 
-    py::PythonVisualizer pyvis({".."});
-    auto figure = pyvis.make_new_figure("Test Plot", py::kwarg("x_range", std::vector<int>{0,100}), py::kwarg("y_range", std::vector<int>{0,100}));
+    malen::Malen mln({"../.."});
+    auto figure = mln.make_new_figure("Test Plot", malen::kwarg("x_range", std::vector<int>{0,100}), malen::kwarg("y_range", std::vector<int>{0,100}));
     // {
     //     auto rgen = [&eng, &dis]()
     //     {
@@ -36,10 +36,10 @@ int main()
     //         std::generate_n(std::begin(s_data.back()), 100, rgen);
     //     }
 
-    //     auto sc = pyvis.plot(figure, "circle", x_data, y_data, py::kwarg("color", c_data));
-    //     auto slider = pyvis.slider(sc, "Test Scatter", 0, 99, py::kwarg("y", s_data));
-    //     auto layout = pyvis.layout(figure, slider);
-    //     pyvis.generate_html(layout, "test.html");
+    //     auto sc = mln.plot(figure, "circle", x_data, y_data, malen::kwarg("color", c_data));
+    //     auto slider = mln.slider(sc, "Test Scatter", 0, 99, malen::kwarg("y", s_data));
+    //     auto layout = mln.layout(figure, slider);
+    //     mln.generate_html(layout, "test.html");
     // }
     {
         std::vector<std::vector<std::vector<int>>> data(100);
@@ -51,9 +51,9 @@ int main()
                 el = {dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng), dis(eng)};
             }
         }
-        auto sc = pyvis.image(figure, data[0]);
-        auto slider = pyvis.slider(sc, "Frame", 0, data.size()-1, py::kwarg("image", data));
-        auto layout = pyvis.layout(figure, slider);
-        pyvis.generate_html(layout, "test.html");
+        auto sc = mln.image(figure, data[0]);
+        auto slider = mln.slider(sc, "Frame", 0, data.size()-1, malen::kwarg("image", data));
+        auto layout = mln.layout(figure, slider);
+        mln.generate_html(layout, "test.html");
     }
 }

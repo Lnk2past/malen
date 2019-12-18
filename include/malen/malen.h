@@ -1,4 +1,4 @@
-// PythonVisualizer.h
+// Malen.h
 //
 // Note: This must be included first! The Python.h header must come first within
 // a translation unit!
@@ -11,15 +11,15 @@
 #include <string>
 #include <vector>
 
-#include "pyvis/py_conversions.h"
-#include "pyvis/py_kwarg.h"
+#include "malen/py_conversions.h"
+#include "malen/py_kwarg.h"
 
-namespace py
+namespace malen
 {
-class PythonVisualizer
+class Malen
 {
 public:
-    PythonVisualizer(const std::vector<std::string> &additional_paths = std::vector<std::string>())
+    Malen(const std::vector<std::string> &additional_paths = std::vector<std::string>())
     {
         Py_Initialize();
         add_to_path(".");
@@ -45,7 +45,7 @@ public:
         generate_html_handle = load_method("generate_html");
     }
 
-    ~PythonVisualizer()
+    ~Malen()
     {
         Py_Finalize();
     }
@@ -112,8 +112,8 @@ public:
     }
 
 private:
-    PythonVisualizer(const PythonVisualizer&) = delete;
-    void operator=(const PythonVisualizer&) = delete;
+    Malen(const Malen&) = delete;
+    void operator=(const Malen&) = delete;
 
     inline void add_to_path(const std::string &path)
     {

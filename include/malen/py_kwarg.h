@@ -1,9 +1,9 @@
 #pragma once
 #include <Python.h>
 #include <utility>
-#include "pyvis/py_conversions.h"
+#include "malen/py_conversions.h"
 
-namespace py
+namespace malen
 {
 template <typename KT, typename VT>
 std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VT &val)
