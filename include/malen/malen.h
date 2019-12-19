@@ -1,8 +1,3 @@
-// Malen.h
-//
-// Note: This must be included first! The Python.h header must come first within
-// a translation unit!
-//
 #pragma once
 
 #include <Python.h>
@@ -45,7 +40,7 @@ public:
     }
 
     template<typename... V>
-    PyObject* operator()(const std::string &handle_name, PyObject *kwargs, V... v)
+    PyObject* invoke(const std::string &handle_name, PyObject *kwargs, V... v)
     {
         PyObject *args = set_arguments(nullptr, 0, v...);
         PyObject *pyRetval = PyObject_Call(get_python_method(handle_name), args, kwargs);
