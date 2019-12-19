@@ -24,7 +24,6 @@ public:
         //  - the rest of the arguments are passed as a variadic template; here we only
         //    have name as an argument and so we pass it along.
         //
-        //
         invoke(__FUNCTION__, nullptr, name);
     }
 };
