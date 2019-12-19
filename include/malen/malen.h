@@ -24,10 +24,9 @@ public:
     Malen(const std::string &module_name, const std::vector<std::string> &additional_paths = std::vector<std::string>())
     {
         Py_Initialize();
-        add_to_path(".");
         for (auto path : additional_paths)
         {
-            add_to_path(path);
+            PyList_Append(PySys_GetObject("path"), convert_to_python(path));
         }
         py_module = PyImport_ImportModule(module_name.c_str());
         if (!py_module)
@@ -37,7 +36,7 @@ public:
         }
     }
 
-    ~Malen()
+    virtual ~Malen()
     {
         if (Py_IsInitialized() != 0)
         {
@@ -61,15 +60,7 @@ public:
         return pyRetval;
     }
 
-private:
-    Malen(const Malen&) = delete;
-    void operator=(const Malen&) = delete;
-
-    inline void add_to_path(const std::string &path)
-    {
-        PyList_Append(PySys_GetObject("path"), convert_to_python(path));
-    }
-
+protected:
     inline PyObject* get_python_method(const std::string &method_name)
     {
         if (py_methods.find(method_name) == std::end(py_methods))
@@ -86,5 +77,9 @@ private:
 
     PyObject *py_module = nullptr;
     std::unordered_map<std::string, PyObject*> py_methods = {};
+
+private:
+    Malen(const Malen&) = delete;
+    void operator=(const Malen&) = delete;
 };
 }
