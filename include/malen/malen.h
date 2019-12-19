@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "malen/py_conversions.h"
-#include "malen/py_arg.h"
-#include "malen/py_kwarg.h"
+#include "malen/py_args.h"
+#include "malen/py_kwargs.h"
 
 namespace malen
 {
