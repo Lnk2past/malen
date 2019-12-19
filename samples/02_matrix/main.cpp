@@ -11,7 +11,7 @@ public:
 
     void populate(std::vector<std::vector<int>> &d)
     {
-        malen::convert_from_python(invoke(__FUNCTION__, nullptr, d), d);
+        malen::convert_to_cpp(invoke(__FUNCTION__, nullptr, d), d);
     }
 
     void print_matrix(const std::vector<std::vector<int>> &d)

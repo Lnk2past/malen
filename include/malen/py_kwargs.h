@@ -1,7 +1,7 @@
 #pragma once
 #include <Python.h>
 #include <utility>
-#include "malen/py_conversions.h"
+#include "malen/convert_cpp_to_py.h"
 
 namespace malen
 {
