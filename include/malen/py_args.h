@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Python.h>
 #include <stdexcept>
 #include <string>
@@ -17,8 +16,14 @@ inline PyObject* make_py_tuple(std::size_t size)
     return args;
 }
 
-inline void set_arguments(PyObject *, std::size_t)
-{}
+inline PyObject* set_arguments(PyObject *args, std::size_t)
+{
+    if (!args)
+    {
+        return PyTuple_New(0);
+    }
+    return args;
+}
 
 template<typename T>
 inline void set_argument(PyObject *args, std::size_t idx, const T &t)

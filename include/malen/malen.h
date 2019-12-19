@@ -1,12 +1,9 @@
 #pragma once
-
 #include <Python.h>
-
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "malen/convert_cpp_to_py.h"
 #include "malen/convert_py_to_cpp.h"
 #include "malen/py_args.h"
