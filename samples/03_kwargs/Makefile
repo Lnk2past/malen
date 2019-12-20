@@ -11,9 +11,7 @@ TRGT:=main.exe
 
 INCLUDES:=-isysteminclude -I../../include
 PYTHON_INCLUDES:=$(shell python3-config --includes)
-PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
-PYTHON_LIBS:=$(shell python3-config --libs)
-PYTHON_LD_FLAGS:=-Wl,-rpath,$(PYTHON_LIB_DIR) -L$(PYTHON_LIB_DIR) $(PYTHON_LIBS)
+PYTHON_LD_FLAGS:=$(shell python3-config --ldflags)
 
 $(TRGT): setup $(OBJ)
 	$(CXX) $(PYTHON_LD_FLAGS) $(OBJ) -o $@
