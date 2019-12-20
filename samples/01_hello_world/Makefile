@@ -16,7 +16,7 @@ PYTHON_LIBS:=$(shell python3-config --libs)
 PYTHON_LD_FLAGS:=-Wl,-rpath,$(PYTHON_LIB_DIR) -L$(PYTHON_LIB_DIR) $(PYTHON_LIBS)
 
 $(TRGT): setup $(OBJ)
-	$(CXX) $(PYTHON_LD_FLAGS) $(OBJ) -o $@
+	$(CXX) $(OBJ) $(PYTHON_LD_FLAGS) -o $@
 
 setup:
 	@mkdir -p obj
