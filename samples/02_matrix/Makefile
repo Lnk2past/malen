@@ -14,7 +14,7 @@ PYTHON_INCLUDES:=$(shell python3-config --includes)
 PYTHON_LD_FLAGS:=$(shell python3-config --ldflags)
 
 $(TRGT): setup $(OBJ)
-	$(CXX) $(PYTHON_LD_FLAGS) $(OBJ) -o $@
+	$(CXX) $(OBJ) $(PYTHON_LD_FLAGS) -o $@
 
 setup:
 	@mkdir -p obj
