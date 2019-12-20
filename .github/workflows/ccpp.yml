@@ -15,7 +15,7 @@ jobs:
         g++ --version
         python3 --version
         python3-config --prefix
-        python3-config --prefix | ls
+        python3-config --prefix | ls -la
         python3-config --libs
     - name: 01_hello_world
       working-directory: samples/01_hello_world
