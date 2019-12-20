@@ -1,0 +1,5 @@
+executable: main.exe
+test-cases:
+    standard:
+        stdout: |
+            Welcome to the world, Lnk2past!

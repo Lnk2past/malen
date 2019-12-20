@@ -6,8 +6,9 @@ class PyHelloWorld : public malen::Malen
 {
 public:
     PyHelloWorld():
-        // 02 - Forward along the module name and any paths that need to available
-        malen::Malen("hello_world", {"."})
+        // 02 - Forward along the module name and any paths that need to available.
+        //      The ../.. is for the test
+        malen::Malen("hello_world", {".", "../.."})
     {}
 
     // 03 - Implement whatever wrapper(s) is needed for methods in your module
@@ -16,11 +17,11 @@ public:
         // 04 - Call invoke (inherited from malen::Malen)
         //
         // Some additional notes here:
-        //  - no need to use __FUNCTION__ here, just used this because the C++ function
+        //  - No need to use __FUNCTION__ here, just used this because the C++ function
         //    here uses the same name, and it would be redundant to type "greet" again
         //
-        //  - arguments are passed into malen::args, which builds the argument list for you
-        //    here we also omitted kwargs, as there are none to pass!
+        //  - Arguments are passed into malen::args, which builds the argument list for you.
+        //    Here we also omitted kwargs, as there are none to pass!
         //
         invoke(__FUNCTION__, malen::args(name));
     }

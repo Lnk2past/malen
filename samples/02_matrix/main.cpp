@@ -6,7 +6,7 @@ class PyMatrix : public malen::Malen
 {
 public:
     PyMatrix():
-        malen::Malen("matrix", {"."})
+        malen::Malen("matrix", {".", "../.."})
     {}
 
     void populate(std::vector<std::vector<int>> &d)

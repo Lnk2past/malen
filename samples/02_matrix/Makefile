@@ -29,6 +29,9 @@ obj/%.o: %.cpp $(INC)
 	$(CXX) $(STD) $(DEBUG_FLAGS) $(CFLAGS) $(INCLUDES) $(PYTHON_INCLUDES) -MF dep/$(<:.cpp=.d) -MMD -c $< -o $@
 
 clean:
-	rm -rf obj dep $(TRGT) __pycache__
+	rm -rf obj dep $(TRGT) __pycache__ test_output
 
-.PHONY:all clean setup
+test: $(TRGT)
+	contest contest.yaml
+
+.PHONY:all clean setup test
