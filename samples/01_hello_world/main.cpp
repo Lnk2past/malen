@@ -19,12 +19,10 @@ public:
         //  - no need to use __FUNCTION__ here, just used this because the C++ function
         //    here uses the same name, and it would be redundant to type "greet" again
         //
-        //  - nullptr here is the set of kwargs (which in this case is None)
+        //  - arguments are passed into malen::args, which builds the argument list for you
+        //    here we also omitted kwargs, as there are none to pass!
         //
-        //  - the rest of the arguments are passed as a variadic template; here we only
-        //    have name as an argument and so we pass it along.
-        //
-        invoke(__FUNCTION__, malen::args(name), nullptr);
+        invoke(__FUNCTION__, malen::args(name));
     }
 };
 
