@@ -37,11 +37,13 @@ public:
         }
     }
 
-    template<typename... V>
-    PyObject* invoke(const std::string &handle_name, PyObject *kwargs, V... v)
+    PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs=nullptr)
     {
-        PyObject *args = set_arguments(nullptr, 0, v...);
-        PyObject *pyRetval = PyObject_Call(get_python_method(handle_name), args, kwargs);
+        if (!py_args)
+        {
+            py_args = args();
+        }
+        PyObject *pyRetval = PyObject_Call(get_python_method(handle_name), py_args, py_kwargs);
         if (!pyRetval)
         {
             PyErr_PrintEx(1);

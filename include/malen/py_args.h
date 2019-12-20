@@ -8,41 +8,52 @@ namespace malen
 {
 inline PyObject* make_py_tuple(std::size_t size)
 {
-    PyObject *args = PyTuple_New(size);
-    if (!args)
+    PyObject *py_args = PyTuple_New(size);
+    if (!py_args)
     {
         throw std::runtime_error("Could not create a Python tuple!");
     }
-    return args;
+    return py_args;
 }
 
-inline PyObject* set_arguments(PyObject *args, std::size_t)
+inline PyObject* _args(PyObject *py_args, std::size_t)
 {
-    if (!args)
+    if (!py_args)
     {
         return PyTuple_New(0);
     }
-    return args;
+    return py_args;
 }
 
 template<typename T>
-inline void set_argument(PyObject *args, std::size_t idx, const T &t)
+inline PyObject* _args(PyObject *py_args, std::size_t idx, const T &t)
 {
-    if (PyTuple_SetItem(args, idx, convert_to_python(t)))
+    if (!py_args)
+    {
+        py_args = make_py_tuple(1);
+    }
+    if (PyTuple_SetItem(py_args, idx, convert_to_python(t)))
     {
         throw std::runtime_error("Could not pack the argument at index " + std::to_string(idx) + " into the argument tuple!");
     }
+    return py_args;
 }
 
 template<typename T, typename... V>
-inline PyObject* set_arguments(PyObject *args, std::size_t idx, T t, V... v)
+inline PyObject* _args(PyObject *py_args, std::size_t idx, T t, V... v)
 {
-    if (!args)
+    if (!py_args)
     {
-        args = make_py_tuple(sizeof...(v) + 1);
+        py_args = make_py_tuple(sizeof...(v) + 1);
     }
-    set_argument(args, idx, t);
-    set_arguments(args, idx+1, v...);
-    return args;
+    _args(py_args, idx, t);
+    _args(py_args, idx+1, v...);
+    return py_args;
+}
+
+template<typename... V>
+inline PyObject* args(V... v)
+{
+    return _args(nullptr, 0, v...);
 }
 }

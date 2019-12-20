@@ -13,8 +13,7 @@ public:
     {
         auto kw1 = malen::kwarg("b", 1);
         auto kw2 = malen::kwarg("c", std::vector<int>{1, 2, 3});
-        auto kwargs = malen::build_kwargs(nullptr, kw1, kw2);
-        invoke(__FUNCTION__, kwargs);
+        invoke(__FUNCTION__, nullptr, malen::kwargs(kw1, kw2));
     }
 };
 

@@ -11,12 +11,12 @@ public:
 
     void populate(std::vector<std::vector<int>> &d)
     {
-        malen::convert_to_cpp(invoke(__FUNCTION__, nullptr, d), d);
+        malen::convert_to_cpp(invoke(__FUNCTION__, malen::args(d), nullptr), d);
     }
 
     void print_matrix(const std::vector<std::vector<int>> &d)
     {
-        invoke(__FUNCTION__, nullptr, d);
+        invoke(__FUNCTION__, malen::args(d), nullptr);
     }
 };
 

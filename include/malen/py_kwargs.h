@@ -1,5 +1,6 @@
 #pragma once
 #include <Python.h>
+#include <iostream>
 #include <utility>
 #include "malen/convert_cpp_to_py.h"
 
@@ -12,25 +13,43 @@ inline std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VT &val)
 }
 
 template <typename KT, template<typename...> class VC, typename VT>
-inline  std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VC<VT> &val)
+inline std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VC<VT> &val)
 {
     return {convert_to_python(key), convert_to_python(val)};
 }
 
-inline PyObject* build_kwargs(PyObject *kwargs)
+inline PyObject* _kwargs(PyObject *py_kwargs)
 {
-    return kwargs;
+    return py_kwargs;
 }
 
-template<typename K, typename... KW>
-inline PyObject* build_kwargs(PyObject *kwargs, const K &kw, KW... kws)
+template<typename... KW>
+inline PyObject* _kwargs(PyObject *py_kwargs, const std::pair<PyObject*, PyObject*> &kw, KW... kws)
 {
-    if (!kwargs)
+    if (!py_kwargs)
     {
-        kwargs = PyDict_New();
+        py_kwargs = PyDict_New();
     }
-    PyDict_SetItem(kwargs, kw.first, kw.second);
-    build_kwargs(kwargs, kws...);
-    return kwargs;
+    PyDict_SetItem(py_kwargs, kw.first, kw.second);
+    _kwargs(py_kwargs, kws...);
+    return py_kwargs;
+}
+
+template<typename VT, typename... KW>
+inline PyObject* _kwargs(PyObject *py_kwargs, const std::string &key, const VT &value, KW... kws)
+{
+    if (!py_kwargs)
+    {
+        py_kwargs = PyDict_New();
+    }
+    PyDict_SetItem(py_kwargs, convert_to_python(key), convert_to_py(value));
+    _kwargs(py_kwargs, kws...);
+    return py_kwargs;
+}
+
+template<typename... KW>
+inline PyObject* kwargs(KW... kws)
+{
+    return _kwargs(nullptr, kws...);
 }
 }
