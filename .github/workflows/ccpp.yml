@@ -5,18 +5,19 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1.1.1
       with:
-        python-version: 3.6
+        python-version: ${{ matrix.python-version }}
     - run: pip install contest
     - run: |
         g++ --version
         python --version
-        python-config --prefix
-        python-config --prefix | ls -la
-        python-config --libs
     - name: 01_hello_world
       working-directory: samples/01_hello_world
       run: make test
