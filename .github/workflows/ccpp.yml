@@ -6,14 +6,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - run: g++ --version
     - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-      with:
-        python-version: 3.7
-    - run: python -m pip install contest
-    - working-directory: samples/01_hello_world
+    - uses: actions/setup-python@v1.1.1
+    - run: pip install contest
+    - name: 01_hello_world
+      working-directory: samples/01_hello_world
       run: make test
-    - working-directory: samples/02_matrix
+    - name: 02_matrix
+      working-directory: samples/02_matrix
       run: make test
-    - working-directory: samples/03_kwargs
+    - name: 03_kwargs
+      working-directory: samples/03_kwargs
       run: make test
