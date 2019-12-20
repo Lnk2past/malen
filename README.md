@@ -1,5 +1,7 @@
 # malen
 
+[![Build Status](https://github.com/Lnk2past/malen/workflows/Tests/badge.svg)](https://github.com/Lnk2past/malen/actions)
+
 *Malen* is the German word meaning *to paint*. This header-only library is meant for simple embedding of Python within a C++ application.
 
 ## Introduction
