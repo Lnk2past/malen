@@ -14,6 +14,15 @@ This has gone through a number of iterations and improvements for a C++ class th
 
 `malen` works by attempting to use a set of overloads and clever variadic templates for building argument lists. Here is a simple example (this is a version of the [01_hello_world sample](samples/01_hello_world/main.cpp) without the comments, for brevity):
 
+Here is the Python module we want to wrap:
+
+```python
+def greet(name):
+    print('Welcome to the world, ' + name + '!')
+```
+
+And here is the C++ code to embed it:
+
 ```c++
 #include "malen/malen.h"
 #include <string>
