@@ -8,6 +8,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1.1.1
+      with:
+        python-version: 3.6-dev
     - run: pip install contest
     - run: |
         g++ --version
