@@ -2,7 +2,7 @@
 #include <Python.h>
 #include <stdexcept>
 #include <string>
-#include "malen/convert_cpp_to_py.h"
+#include "malen/utilities/convert_cpp_to_py.h"
 
 namespace malen
 {

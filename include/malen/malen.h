@@ -4,10 +4,10 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "malen/convert_cpp_to_py.h"
-#include "malen/convert_py_to_cpp.h"
-#include "malen/py_args.h"
-#include "malen/py_kwargs.h"
+#include "malen/utilities/convert_cpp_to_py.h"
+#include "malen/utilities/convert_py_to_cpp.h"
+#include "malen/utilities/py_args.h"
+#include "malen/utilities/py_kwargs.h"
 
 namespace malen
 {
@@ -37,7 +37,7 @@ public:
         }
     }
 
-    PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs=nullptr)
+    PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
     {
         if (!py_args)
         {
