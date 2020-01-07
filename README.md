@@ -36,7 +36,14 @@ class PyHelloWorld : public malen::Malen
 {
 public:
     PyHelloWorld():
-        malen::Malen("hello_world", {"."})
+        malen::Malen({
+            {
+                "hello_world",
+                {
+                    "greet"
+                }
+            }},
+            {"."})
     {}
 
     void greet(const std::string &name)
@@ -52,13 +59,15 @@ int main()
 }
 ```
 
-Note that out `PyHelloWorld` class only defines a constructor and a method (to wrap around the single method provided by hello_world.py). All of the state is held inside of the inherited `malen::Malen` class. The state refers to a handle to the module and any methods we end up calling. Methods are only loaded upon being called (and then their handles are cached).
+Note that out `PyHelloWorld` class only defines a constructor and a method (to wrap around the single method provided by hello_world.py). All of the state is held inside of the inherited `malen::Malen` class. The state refers to a handle to the module and any methods we end up calling. Methods can be preloaded, as they are in this example, or can be loaded upon being called (and then their handles are cached).
 
-The `malen::Malen::invoke` method takes in a method name and two pointers to the functions `args` and `kwargs`. `malen` provides a handful of utility functions for constructing these pointers for you. Both functions `malen::args` and `malen::kwargs` are variadic templates, and handle the construction of the tuple and dictionary to be given to Python. For now you can pass simple 
+`malen::Malen` has a few constructors that we can use to define our wrapper(s). You can give it modules, modules + methods, and/or additional paths to search. In our example above we pass a mapping instructing it to load the `hello_world` module and from it load the `greet` method. We also tell it to include the current directory in the search path (as that is where we assume our module is in this example). You can use `malen::Malen::load_python_method` to load methods or `malen::Malen::add_to_path` to directory(s) to the search path whenever you want, and can even pass a module to `invoke` to load a method is if it not currently cached.
+
+The `malen::Malen::invoke` method takes in a method name and two pointers to the functions `args` and `kwargs`. `malen` provides a handful of utility functions for constructing these pointers for you. Both functions `malen::args` and `malen::kwargs` are variadic templates, and handle the construction of the tuple and dictionary to be given to Python. For now you can pass simple types and some STL containers. As mentioned in the previous paragraph, you may also supply a module name in the case you may expect the method to not be laoded yet.
 
 The kwargs default to `nullptr` and therefore can be omitted, but the `args` must always be supplied. If you do not have any arguments to pass along, just pass `nullptr` and `malen` will handle the rest.
 
-Technically you could just instantiate a `malen::Malen` directly and write free functions to work with the `malen::Malen` instance and whatever methods you want to call; in the end the effect is all the same.
+Technically you could just instantiate a `malen::Malen` directly and write code/functions to work with the `malen::Malen` instance and whatever methods you want to call; in the end the effect is all the same and you can do what you want or need (but I prefer writing wrapper classes).
 
 ## Examples & Usage
 

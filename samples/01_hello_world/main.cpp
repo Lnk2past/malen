@@ -6,9 +6,20 @@ class PyHelloWorld : public malen::Malen
 {
 public:
     PyHelloWorld():
-        // 02 - Forward along the module name and any paths that need to available.
-        //      The ../.. is for the test
-        malen::Malen("hello_world", {".", "../.."})
+        // 02 - Pass a mapping of module names to lists of method names along with any paths
+        // that need to available. The . is for the current directory and ../.. is for the test
+        //
+        // We are loading a module named "hello_world" and from that module loading a method
+        // named "greet"
+        //
+        malen::Malen({
+            {
+                "hello_world",
+                {
+                    "greet"
+                }
+            }},
+            {".", "../.."})
     {}
 
     // 03 - Implement whatever wrapper(s) is needed for methods in your module

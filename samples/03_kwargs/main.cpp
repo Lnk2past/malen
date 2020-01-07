@@ -6,7 +6,14 @@ class PyFoo : public malen::Malen
 {
 public:
     PyFoo():
-        malen::Malen("foo", {".", "../.."})
+        malen::Malen({
+            {
+                "foo",
+                {
+                    "bar"
+                }
+            }},
+            {".", "../.."})
     {}
 
     void bar()

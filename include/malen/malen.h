@@ -1,5 +1,6 @@
 #pragma once
 #include <Python.h>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -14,18 +15,38 @@ namespace malen
 class Malen
 {
 public:
-    Malen(const std::string &module_name, const std::vector<std::string> &additional_paths = std::vector<std::string>())
+    Malen(const std::vector<std::string> &additional_paths = std::vector<std::string>())
     {
         Py_Initialize();
-        for (auto path : additional_paths)
-        {
-            PyList_Append(PySys_GetObject("path"), convert_to_python(path));
-        }
-        py_module = PyImport_ImportModule(module_name.c_str());
-        if (!py_module)
+        add_to_path(additional_paths);
+    }
+
+    Malen(const std::string &module_name, const std::vector<std::string> &additional_paths = std::vector<std::string>()):
+        Malen(additional_paths)
+    {
+        py_modules[module_name] = PyImport_ImportModule(module_name.c_str());
+        if (!py_modules[module_name])
         {
             PyErr_PrintEx(1);
             throw std::runtime_error("There were problems loading the " + module_name + " module.");
+        }
+    }
+
+    Malen(const std::map<std::string, std::vector<std::string>> &modules_and_methods, const std::vector<std::string> &additional_paths = std::vector<std::string>()):
+        Malen(additional_paths)
+    {
+        for (auto module_details : modules_and_methods)
+        {
+            py_modules[module_details.first] = PyImport_ImportModule(module_details.first.c_str());
+            if (!py_modules[module_details.first])
+            {
+                PyErr_PrintEx(1);
+                throw std::runtime_error("There were problems loading the " + module_details.first + " module.");
+            }
+            for (auto &method_name: module_details.second)
+            {
+                load_python_method(module_details.first, method_name);
+            }
         }
     }
 
@@ -37,7 +58,15 @@ public:
         }
     }
 
-    PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
+    inline void add_to_path(const std::vector<std::string> &additional_paths)
+    {
+        for (auto path : additional_paths)
+        {
+            PyList_Append(PySys_GetObject("path"), convert_to_python(path));
+        }
+    }
+
+    inline PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
     {
         if (!py_args)
         {
@@ -55,12 +84,17 @@ public:
         return pyRetval;
     }
 
-protected:
-    inline PyObject* get_python_method(const std::string &method_name)
+    inline PyObject* invoke(const std::string &module_name, const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
+    {
+        load_python_method(module_name, handle_name);
+        return invoke(handle_name, py_args, py_kwargs);
+    }
+
+    inline PyObject* load_python_method(const std::string &module_name, const std::string &method_name)
     {
         if (py_methods.find(method_name) == std::end(py_methods))
         {
-            PyObject *handle = PyObject_GetAttrString(py_module, method_name.c_str());
+            PyObject *handle = PyObject_GetAttrString(py_modules[module_name], method_name.c_str());
             if (!handle)
             {
                 throw std::runtime_error("There were problems loading the " + method_name + " method.");
@@ -70,7 +104,17 @@ protected:
         return py_methods[method_name];
     }
 
-    PyObject *py_module = nullptr;
+    inline PyObject* get_python_method(const std::string &method_name)
+    {
+        if (py_methods.find(method_name) == std::end(py_methods))
+        {
+            throw std::runtime_error("No method " + method_name + " loaded.");
+        }
+        return py_methods[method_name];
+    }
+
+protected:
+    std::unordered_map<std::string, PyObject*> py_modules = {};
     std::unordered_map<std::string, PyObject*> py_methods = {};
 
 private:

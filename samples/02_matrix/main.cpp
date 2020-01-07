@@ -6,7 +6,15 @@ class PyMatrix : public malen::Malen
 {
 public:
     PyMatrix():
-        malen::Malen("matrix", {".", "../.."})
+        malen::Malen({
+            {
+                "matrix",
+                {
+                    "populate",
+                    "print_matrix"
+                }
+            }},
+            {".", "../.."})
     {}
 
     void populate(std::vector<std::vector<int>> &d)
@@ -16,7 +24,7 @@ public:
 
     void print_matrix(const std::vector<std::vector<int>> &d)
     {
-        invoke(__FUNCTION__, malen::args(d), nullptr);
+        invoke(__FUNCTION__, malen::args(d));
     }
 };
 
