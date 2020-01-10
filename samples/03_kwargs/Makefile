@@ -9,7 +9,7 @@ OBJ:=$(SRC:%.cpp=obj/%.o)
 DEP:=$(SRC:%.cpp=dep/%.d)
 TRGT:=main.exe
 
-INCLUDES:=-isysteminclude -I../../include
+INCLUDES:=-I../../
 PYTHON_INCLUDES:=$(shell python3-config --includes)
 PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
 PYTHON_LIBS:=$(shell python3-config --libs)
