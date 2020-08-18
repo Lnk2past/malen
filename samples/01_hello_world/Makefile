@@ -14,15 +14,13 @@ INCLUDES:=-I../../include
 PYVERSION:=$(shell python3 --version)
 PY8_REGEX:=^Python [0-9]+\.8.[0-9]+$
 
-ifeq ($(shell echo ${PYVERSION} | egrep "${PY8_REGEX}"),)
-	EMBED:=--embed
-else
-	EMBED:=
-endif
-
 PYTHON_INCLUDES:=$(shell python3-config --includes)
 PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
-PYTHON_LIBS:=$(shell python3-config --libs $(EMBED))
+ifeq ($(shell echo ${PYVERSION} | egrep "${PY8_REGEX}"),)
+	PYTHON_LIBS:=$(shell python3-config --libs --embed)
+else
+	PYTHON_LIBS:=$(shell python3-config --libs)
+endif
 PYTHON_LD_FLAGS:=-Wl,-rpath,$(PYTHON_LIB_DIR) -L$(PYTHON_LIB_DIR) $(PYTHON_LIBS)
 
 $(TRGT): setup $(OBJ)
