@@ -1,5 +1,5 @@
 executable: main.exe
 test-cases:
-    standard:
-        stdout: |
-            Welcome to the world, Lnk2past!
+    - name: standard
+    - stdout: |
+        Welcome to the world, Lnk2past!
