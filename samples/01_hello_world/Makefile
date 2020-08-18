@@ -12,9 +12,9 @@ TRGT:=main.exe
 INCLUDES:=-I../../include
 
 PYVERSION:=$(shell python3 --version)
-PYVERION_REGEX:=^Python [0-9]+\.([0-9]+).[0-9]+$
+PY8_REGEX:=^Python [0-9]+\.8.[0-9]+$
 
-ifeq ($(shell echo ${PYVERSION} | egrep "${PYVERION_REGEX}"),)
+ifeq ($(shell echo ${PYVERSION} | egrep "${PY8_REGEX}"),)
 	EMBED:=--embed
 else
 	EMBED:=
