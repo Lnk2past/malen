@@ -10,9 +10,19 @@ DEP:=$(SRC:%.cpp=dep/%.d)
 TRGT:=main.exe
 
 INCLUDES:=-I../../include
+
+PYVERSION:=$(shell python3 --version)
+PYVERION_REGEX:=^Python [0-9]+\.([0-9]+).[0-9]+$
+
+ifeq ($(shell echo ${PYVERSION} | egrep "${PYVERION_REGEX}"),)
+	EMBED:=--embed
+else
+	EMBED:=
+endif
+
 PYTHON_INCLUDES:=$(shell python3-config --includes)
 PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
-PYTHON_LIBS:=$(shell python3-config --libs --embed)
+PYTHON_LIBS:=$(shell python3-config --libs $(EMBED))
 PYTHON_LD_FLAGS:=-Wl,-rpath,$(PYTHON_LIB_DIR) -L$(PYTHON_LIB_DIR) $(PYTHON_LIBS)
 
 $(TRGT): setup $(OBJ)
