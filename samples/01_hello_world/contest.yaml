@@ -3,3 +3,4 @@ test-cases:
     - name: standard
       stdout: |
         Welcome to the world, Lnk2past!
+        
