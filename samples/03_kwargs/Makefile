@@ -23,9 +23,9 @@ else
 endif
 PYTHON_LD_FLAGS:=-Wl,-rpath,$(PYTHON_LIB_DIR) -L$(PYTHON_LIB_DIR) $(PYTHON_LIBS)
 
-$(info PYVERSION)
-$(info PY8_REGEX)
-$(info PYTHON_LIBS)
+$(info $(PYVERSION))
+$(info $(PY8_REGEX))
+$(info $(PYTHON_LIBS))
 
 $(TRGT): setup $(OBJ)
 	$(CXX) $(OBJ) $(PYTHON_LD_FLAGS) -o $@
