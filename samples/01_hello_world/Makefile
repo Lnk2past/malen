@@ -17,11 +17,9 @@ PY8_REGEX:=^Python [0-9]+\.8\.[0-9]+$
 PYTHON_INCLUDES:=$(shell python3-config --includes)
 PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
 ifeq ($(shell echo ${PYVERSION} | egrep "${PY8_REGEX}"),)
-	$(info PYTHON 8 DETECTED)
-	PYTHON_LIBS:=$(shell python3-config --libs --embed)
-else
-	$(info OLDER PYTHON DETECTED)
 	PYTHON_LIBS:=$(shell python3-config --libs)
+else
+	PYTHON_LIBS:=$(shell python3-config --libs --embed)
 endif
 PYTHON_LD_FLAGS:=-Wl,-rpath,$(PYTHON_LIB_DIR) -L$(PYTHON_LIB_DIR) $(PYTHON_LIBS)
 
