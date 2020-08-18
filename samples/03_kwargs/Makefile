@@ -12,7 +12,7 @@ TRGT:=main.exe
 INCLUDES:=-I../../include
 
 PYVERSION:=$(shell python3 --version)
-PY8_REGEX:=^Python [0-9]+\.8.[0-9]+$
+PY8_REGEX:=^Python [0-9]+\.8\.[0-9]+$
 
 PYTHON_INCLUDES:=$(shell python3-config --includes)
 PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
