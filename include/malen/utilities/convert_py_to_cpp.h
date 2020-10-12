@@ -40,6 +40,11 @@ inline void convert_to_cpp(PyObject*p, std::string &c)
     c = PyUnicode_AsUTF8(p);
 }
 
+inline void convert_to_cpp(PyObject*p, bool &c)
+{
+    c = static_cast<bool>(PyLong_AsLong(p));
+}
+
 template <template<typename...> class C, typename T>
 inline void convert_to_cpp(PyObject* p, C<T> &c)
 {

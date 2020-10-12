@@ -99,7 +99,6 @@ public:
         return py_methods[method_name];
     }
 
-
     inline PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
     {
         if (!py_args)

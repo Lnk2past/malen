@@ -50,6 +50,16 @@ inline PyObject* convert_to_python(const std::string &c)
     return PyUnicode_FromString(c.c_str());
 }
 
+inline PyObject* convert_to_python(const char *c)
+{
+    return PyUnicode_FromString(c);
+}
+
+inline PyObject* convert_to_python(const bool c)
+{
+    return PyBool_FromLong(static_cast<long>(c));
+}
+
 template <template<typename...> class C, typename T>
 inline PyObject* convert_to_python(const C<T> &c)
 {
