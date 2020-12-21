@@ -1,5 +1,4 @@
 #include "malen/malen.h"
-#include <iostream>
 #include <vector>
 
 class PyFoo : public malen::Malen
