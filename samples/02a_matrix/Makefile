@@ -1,5 +1,5 @@
 CXX:=g++
-STD:=-std=c++14
+STD:=-std=c++17
 CFLAGS:=-Wall -Werror -Wextra -Weffc++ -pedantic
 DEBUG_FLAGS:=-g
 
@@ -14,7 +14,7 @@ INCLUDES:=-I../../include
 PYVERSION:=$(shell python3 --version)
 PY8_REGEX:=^Python [0-9]+\.8\.[0-9]+$
 
-PYTHON_INCLUDES:=$(shell python3-config --includes)
+PYTHON_INCLUDES:=$(shell python3-config --includes) -isystem $(shell python -c "import numpy; print(numpy.get_include())")
 PYTHON_LIB_DIR:=$(shell python3-config --prefix)/lib
 ifeq ($(shell echo ${PYVERSION} | egrep "${PY8_REGEX}"),)
 	PYTHON_LIBS:=$(shell python3-config --libs)

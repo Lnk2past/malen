@@ -1,6 +1,6 @@
 CXX:=g++
 STD:=-std=c++17
-CFLAGS:=-Wall -Werror -Wextra -Weffc++ -pedantic
+CFLAGS:=-Wall -Werror -Wextra -Weffc++ -pedantic -D_MALENABLE_NUMPY
 DEBUG_FLAGS:=-g
 
 SRC:=$(wildcard *.cpp)

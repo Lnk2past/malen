@@ -1,5 +1,6 @@
 #pragma once
 #include <Python.h>
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -10,6 +11,12 @@
 #include "malen/utilities/py_args.h"
 #include "malen/utilities/py_kwargs.h"
 
+#ifdef _MALENABLE_NUMPY
+#ifndef NPY_NO_DEPRECATED_API
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#endif
+#endif
+
 namespace malen
 {
 class Malen
@@ -18,6 +25,10 @@ public:
     Malen(const std::vector<std::string> &additional_paths = std::vector<std::string>())
     {
         Py_Initialize();
+        #ifdef _MALENABLE_NUMPY
+        _initialize_numpy();
+        #endif
+
         add_to_path(additional_paths);
     }
 
@@ -128,6 +139,12 @@ protected:
     std::unordered_map<std::string, PyObject*> py_methods = {};
 
 private:
+    #ifdef _MALENABLE_NUMPY
+    int _initialize_numpy() {
+        return _import_array();
+    };
+    #endif
+
     Malen(const Malen&) = delete;
     void operator=(const Malen&) = delete;
 };

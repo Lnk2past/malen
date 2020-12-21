@@ -1,5 +1,5 @@
 CXX:=g++
-STD:=-std=c++14
+STD:=-std=c++17
 CFLAGS:=-Wall -Werror -Wextra -Weffc++ -pedantic
 DEBUG_FLAGS:=-g
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <Python.h>
+
 #include <stdexcept>
 #include <string>
 
@@ -63,4 +64,53 @@ inline void convert_to_cpp(PyObject* p, C<T> &c)
     }
 }
 
+#ifdef _MALENABLE_NUMPY
+extern "C"
+{
+#ifndef NPY_NO_DEPRECATED_API
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#endif
+#include <numpy/arrayobject.h>
+}
+#include <type_traits>
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+inline void convert_to_cpp(PyObject* p, std::vector<T> &c)
+{
+    auto npa = reinterpret_cast<PyArrayObject*>(p);
+    void* data = PyArray_DATA(npa);
+    c = std::vector<T>(static_cast<T*>(data), static_cast<T*>(data) + PyArray_SIZE(npa));
+}
+
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+inline void convert_to_cpp(PyObject* p, std::vector<std::vector<T>> &c)
+{
+    auto npa = reinterpret_cast<PyArrayObject*>(p);
+    void* data = PyArray_DATA(npa);
+    auto dims = PyArray_DIMS(npa);
+    c.clear();
+    for (npy_intp ri = 0; ri < dims[0]; ++ri)
+    {
+        c.emplace_back(static_cast<T*>(data) + dims[1] * ri, static_cast<T*>(data) + dims[1] * (ri + 1));
+    }
+}
+
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+inline void convert_to_cpp(PyObject* p, std::vector<std::vector<std::vector<T>>> &c)
+{
+    auto npa = reinterpret_cast<PyArrayObject*>(p);
+    void* data = PyArray_DATA(npa);
+    auto dims = PyArray_DIMS(npa);
+    c.clear();
+    for (npy_intp di = 0; di < dims[2]; ++di)
+    {
+        c.emplace_back();
+        for (npy_intp ri = 0; ri < dims[0]; ++ri)
+        {
+            auto soff = dims[1] * ri + di * dims[0] * dims[1];
+            auto eoff = dims[1] * (ri + 1) + di * dims[0] * dims[1];
+            c.back().emplace_back(static_cast<T*>(data) + soff, static_cast<T*>(data) + eoff);
+        }
+    }
+}
+#endif
 }
