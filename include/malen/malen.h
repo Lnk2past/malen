@@ -18,6 +18,12 @@
 
 namespace malen
 {
+struct ModuleCache
+{
+    PyObject *module = nullptr;
+    std::map<std::string, PyObject*> attribute_cache = {};
+};
+
 class Malen
 {
 public:
@@ -35,7 +41,7 @@ public:
         Malen(additional_paths)
     {
         load_python_module(module_name);
-        if (!py_modules[module_name])
+        if (!py_modules[module_name].module)
         {
             PyErr_PrintEx(1);
             throw std::runtime_error("There were problems loading the " + module_name + " module.");
@@ -50,7 +56,7 @@ public:
             load_python_module(module_details.first);
             for (auto &method_name: module_details.second)
             {
-                load_python_method(module_details.first, method_name);
+                load_python_attribute(module_details.first, method_name);
             }
         }
     }
@@ -67,7 +73,7 @@ public:
     {
         for (auto path : additional_paths)
         {
-            PyList_Append(PySys_GetObject("path"), convert_to_python(path));
+            PyList_Append(PySys_GetObject("path"), py_cast(path));
         }
     }
 
@@ -81,61 +87,92 @@ public:
                 PyErr_PrintEx(1);
                 throw std::runtime_error("There were problems loading the " + module_name + " module.");
             }
-            py_modules[module_name] = py_module;
+            py_modules[module_name].module = py_module;
         }
-        return py_modules[module_name];
+        return py_modules[module_name].module;
+    }
+
+    inline PyObject* load_python_attribute(PyObject *object, const std::string &attribute_name)
+    {
+        PyObject *handle = PyObject_GetAttrString(object, attribute_name.c_str());
+        if (!handle)
+        {
+            throw std::runtime_error("There were problems loading the " + attribute_name + " attribute.");
+        }
+        return handle;
+    }
+
+    inline PyObject* load_python_attribute(const std::string &module_name, const std::string &attribute_name)
+    {
+        return load_python_attribute(load_python_module(module_name), attribute_name);
+    }
+
+    inline PyObject* load_python_method(PyObject *object, const std::string &method_name)
+    {
+        auto handle = load_python_attribute(object, method_name);
+        if (!handle)
+        {
+            throw std::runtime_error("There were problems loading the " + method_name + " method.");
+        }
+        return handle;
     }
 
     inline PyObject* load_python_method(const std::string &module_name, const std::string &method_name)
     {
-        if (py_methods.find(method_name) == std::end(py_methods))
-        {
-            PyObject *handle = PyObject_GetAttrString(load_python_module(module_name), method_name.c_str());
-            if (!handle)
-            {
-                throw std::runtime_error("There were problems loading the " + method_name + " method.");
-            }
-            py_methods[method_name] = handle;
-        }
-        return py_methods[method_name];
+        return load_python_method(load_python_module(module_name), method_name);
     }
 
-    inline PyObject* get_python_method(const std::string &method_name)
+    inline void load_python_module_and_methods(const std::map<std::string, std::vector<std::string>> &modules_and_methods)
     {
-        if (py_methods.find(method_name) == std::end(py_methods))
+        for (auto module_details : modules_and_methods)
         {
-            throw std::runtime_error("No method " + method_name + " loaded.");
+            load_python_module(module_details.first);
+            for (auto &method_name: module_details.second)
+            {
+                load_python_method(module_details.first, method_name);
+            }
         }
-        return py_methods[method_name];
     }
 
-    inline PyObject* invoke(const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
+    inline PyObject* get_python_module(const std::string &module_name)
+    {
+        if (py_modules.find(module_name) == std::end(py_modules))
+        {
+            throw std::runtime_error("No module " + module_name + " loaded.");
+        }
+        return py_modules[module_name].module;
+    }
+
+
+    inline PyObject* invoke(PyObject *object, PyObject *py_args, PyObject *py_kwargs = nullptr)
     {
         if (!py_args)
         {
             py_args = args();
         }
-        PyObject *pyRetval = PyObject_Call(get_python_method(handle_name), py_args, py_kwargs);
+        PyObject *pyRetval = PyObject_Call(object, py_args, py_kwargs);
         if (!pyRetval)
         {
             PyErr_PrintEx(1);
-            throw std::runtime_error("Failed to invoke the " +  handle_name + " handle!");
+            throw std::runtime_error("Failed to invoke the handle!");
         }
         Py_INCREF(pyRetval);
         // Py_DECREF(args);
         // TODO: Determine issue with this Py_DECREF...
         return pyRetval;
     }
-
-    inline PyObject* invoke(const std::string &module_name, const std::string &handle_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
+    inline PyObject* invoke(PyObject *object, const std::string &method_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
     {
-        load_python_method(module_name, handle_name);
-        return invoke(handle_name, py_args, py_kwargs);
+        return invoke(load_python_method(object, method_name), py_args, py_kwargs);
+    }
+
+    inline PyObject* invoke(const std::string &module_name, const std::string &method_name, PyObject *py_args, PyObject *py_kwargs = nullptr)
+    {
+        return invoke(load_python_method(module_name, method_name), py_args, py_kwargs);
     }
 
 protected:
-    std::unordered_map<std::string, PyObject*> py_modules = {};
-    std::unordered_map<std::string, PyObject*> py_methods = {};
+    std::unordered_map<std::string, ModuleCache> py_modules = {};
 
 private:
     #ifdef _MALENABLE_NUMPY

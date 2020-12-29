@@ -1,78 +1,99 @@
 #pragma once
 #include <Python.h>
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
 namespace malen
 {
-inline PyObject* convert_to_python(PyObject* c)
+inline PyObject* py_cast(PyObject* c)
 {
     return c;
 }
 
-inline PyObject* convert_to_python(const int c)
+template <typename T, typename std::enable_if_t<std::is_pointer<T>::value>* = nullptr>
+inline PyObject* py_cast(const T c)
+{
+    return PyLong_FromLong(reinterpret_cast<std::intptr_t>(c));
+}
+
+inline PyObject* py_cast(const int c)
 {
     return PyLong_FromLong(c);
 }
 
-inline PyObject* convert_to_python(const unsigned int c)
+inline PyObject* py_cast(const unsigned int c)
 {
     return PyLong_FromUnsignedLong(c);
 }
 
-inline PyObject* convert_to_python(const long c)
+inline PyObject* py_cast(const long c)
 {
     return PyLong_FromLong(c);
 }
 
-inline PyObject* convert_to_python(const unsigned long c)
+inline PyObject* py_cast(const unsigned long c)
 {
     return PyLong_FromUnsignedLong(c);
 }
 
-inline PyObject* convert_to_python(const long long c)
+inline PyObject* py_cast(const long long c)
 {
     return PyLong_FromLongLong(c);
 }
 
-inline PyObject* convert_to_python(const unsigned long long c)
+inline PyObject* py_cast(const unsigned long long c)
 {
     return PyLong_FromUnsignedLongLong(c);
 }
 
-inline PyObject* convert_to_python(const double c)
+inline PyObject* py_cast(const double c)
 {
     return PyFloat_FromDouble(c);
 }
 
-inline PyObject* convert_to_python(const std::string &c)
+inline PyObject* py_cast(const std::string &c)
 {
     return PyUnicode_FromString(c.c_str());
 }
 
-inline PyObject* convert_to_python(const char *c)
+inline PyObject* py_cast(const char *c)
 {
     return PyUnicode_FromString(c);
 }
 
-inline PyObject* convert_to_python(const bool c)
+inline PyObject* py_cast(const bool c)
 {
     return PyBool_FromLong(static_cast<long>(c));
 }
 
 template <template<typename...> class C, typename T>
-inline PyObject* convert_to_python(const C<T> &c)
+inline PyObject* py_cast(const C<T> &c)
 {
     PyObject *py_list = PyList_New(c.size());
     for (std::size_t idx = 0; idx < c.size(); ++idx)
     {
-        if (PyList_SetItem(py_list, idx, convert_to_python(c[idx])))
+        if (PyList_SetItem(py_list, idx, py_cast(c[idx])))
         {
             throw std::runtime_error("Could not set the data at index " + std::to_string(idx) + "!");
         }
     }
     return py_list;
+}
+
+template <template<typename...> class M, typename KT, typename VT>
+inline PyObject* py_cast(const M<KT, VT> &c)
+{
+    PyObject *py_dict = PyDict_New();
+    for (const auto &p : c)
+    {
+        if (PyDict_SetItem(py_dict, py_cast(p.first), py_cast(p.second)))
+        {
+            throw std::runtime_error("Could not set the data at key!");
+        }
+    }
+    return py_dict;
 }
 
 #ifdef _MALENABLE_NUMPY
@@ -154,7 +175,7 @@ template<class T>
 inline static constexpr int numpy_type_v = numpy_type<T>::typenum;
 
 template <typename T>
-inline PyObject* convert_to_python(const std::vector<T> &c)
+inline PyObject* py_cast(const std::vector<T> &c)
 {
     npy_intp dims[1] = {static_cast<npy_intp>(c.size())};
     PyObject *np_array = PyArray_SimpleNewFromData(
@@ -167,7 +188,7 @@ inline PyObject* convert_to_python(const std::vector<T> &c)
 }
 
 template <typename T>
-inline PyObject* convert_to_python(const std::vector<std::vector<T>> &c)
+inline PyObject* py_cast(const std::vector<std::vector<T>> &c)
 {
     if (c.size() == 0)
     {
@@ -178,7 +199,7 @@ inline PyObject* convert_to_python(const std::vector<std::vector<T>> &c)
     PyObject *npas = PyTuple_New(c.size());
     for (std::size_t i = 0; i < c.size(); ++i)
     {
-        PyTuple_SET_ITEM(npas, i, convert_to_python(c[i]));
+        PyTuple_SET_ITEM(npas, i, py_cast(c[i]));
     }
     PyObject *np_arrays = PyArray_Concatenate(npas, 0);
 
@@ -191,7 +212,7 @@ inline PyObject* convert_to_python(const std::vector<std::vector<T>> &c)
 }
 
 template <typename T>
-inline PyObject* convert_to_python(const std::vector<std::vector<std::vector<T>>> &c)
+inline PyObject* py_cast(const std::vector<std::vector<std::vector<T>>> &c)
 {
     if (c.size() == 0)
     {
@@ -202,7 +223,7 @@ inline PyObject* convert_to_python(const std::vector<std::vector<std::vector<T>>
     PyObject *npas = PyTuple_New(c.size());
     for (std::size_t i = 0; i < c.size(); ++i)
     {
-        PyTuple_SET_ITEM(npas, i, convert_to_python(c[i]));
+        PyTuple_SET_ITEM(npas, i, py_cast(c[i]));
     }
     PyObject *np_arrays = PyArray_Concatenate(npas, 0);
 

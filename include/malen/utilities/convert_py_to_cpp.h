@@ -6,48 +6,48 @@
 
 namespace malen
 {
-inline void convert_to_cpp(PyObject*p, int &c)
+inline void cpp_cast(PyObject*p, int &c)
 {
     c = PyLong_AsLong(p);
 }
 
-inline void convert_to_cpp(PyObject*p, unsigned int &c)
+inline void cpp_cast(PyObject*p, unsigned int &c)
 {
     c = PyLong_AsUnsignedLong(p);
 }
 
-inline void convert_to_cpp(PyObject*p, long &c)
+inline void cpp_cast(PyObject*p, long &c)
 {
     c = PyLong_AsLong(p);
 }
 
-inline void convert_to_cpp(PyObject*p, unsigned long &c)
+inline void cpp_cast(PyObject*p, unsigned long &c)
 {
     c = PyLong_AsUnsignedLong(p);
 }
 
-inline void convert_to_cpp(PyObject*p, long long &c)
+inline void cpp_cast(PyObject*p, long long &c)
 {
     c = PyLong_AsLongLong(p);
 }
 
-inline void convert_to_cpp(PyObject*p, unsigned long long &c)
+inline void cpp_cast(PyObject*p, unsigned long long &c)
 {
     c = PyLong_AsUnsignedLongLong(p);
 }
 
-inline void convert_to_cpp(PyObject*p, std::string &c)
+inline void cpp_cast(PyObject*p, std::string &c)
 {
     c = PyUnicode_AsUTF8(p);
 }
 
-inline void convert_to_cpp(PyObject*p, bool &c)
+inline void cpp_cast(PyObject*p, bool &c)
 {
     c = static_cast<bool>(PyLong_AsLong(p));
 }
 
 template <template<typename...> class C, typename T>
-inline void convert_to_cpp(PyObject* p, C<T> &c)
+inline void cpp_cast(PyObject* p, C<T> &c)
 {
     for (Py_ssize_t idx = 0; idx < PyList_Size(p); ++idx)
     {
@@ -57,9 +57,9 @@ inline void convert_to_cpp(PyObject* p, C<T> &c)
             throw std::runtime_error("Could not get the data at index " + std::to_string(idx) + "!");
         }
         #if __cplusplus >= 201703L
-        convert_to_cpp(con, *c.emplace_back());
+        cpp_cast(con, *c.emplace_back());
         #else
-        convert_to_cpp(con, *c.emplace(std::end(c)));
+        cpp_cast(con, *c.emplace(std::end(c)));
         #endif
     }
 }
@@ -74,7 +74,7 @@ extern "C"
 }
 #include <type_traits>
 template <typename T, typename std::enable_if_t<std::is_integral<T>::value>* = nullptr>
-inline void convert_to_cpp(PyObject* p, std::vector<T> &c)
+inline void cpp_cast(PyObject* p, std::vector<T> &c)
 {
     auto npa = reinterpret_cast<PyArrayObject*>(p);
     void* data = PyArray_DATA(npa);
@@ -82,7 +82,7 @@ inline void convert_to_cpp(PyObject* p, std::vector<T> &c)
 }
 
 template <typename T, typename std::enable_if_t<std::is_integral<T>::value>* = nullptr>
-inline void convert_to_cpp(PyObject* p, std::vector<std::vector<T>> &c)
+inline void cpp_cast(PyObject* p, std::vector<std::vector<T>> &c)
 {
     auto npa = reinterpret_cast<PyArrayObject*>(p);
     void* data = PyArray_DATA(npa);
@@ -95,7 +95,7 @@ inline void convert_to_cpp(PyObject* p, std::vector<std::vector<T>> &c)
 }
 
 template <typename T, typename std::enable_if_t<std::is_integral<T>::value>* = nullptr>
-inline void convert_to_cpp(PyObject* p, std::vector<std::vector<std::vector<T>>> &c)
+inline void cpp_cast(PyObject* p, std::vector<std::vector<std::vector<T>>> &c)
 {
     auto npa = reinterpret_cast<PyArrayObject*>(p);
     void* data = PyArray_DATA(npa);

@@ -8,13 +8,13 @@ namespace malen
 template <typename KT, typename VT>
 inline std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VT &val)
 {
-    return {convert_to_python(key), convert_to_python(val)};
+    return {py_cast(key), py_cast(val)};
 }
 
 template <typename KT, template<typename...> class VC, typename VT>
 inline std::pair<PyObject*, PyObject*> kwarg(const KT &key, const VC<VT> &val)
 {
-    return {convert_to_python(key), convert_to_python(val)};
+    return {py_cast(key), py_cast(val)};
 }
 
 inline PyObject* _kwargs(PyObject *py_kwargs)
@@ -41,7 +41,7 @@ inline PyObject* _kwargs(PyObject *py_kwargs, const std::string &key, const VT &
     {
         py_kwargs = PyDict_New();
     }
-    PyDict_SetItem(py_kwargs, convert_to_python(key), convert_to_py(value));
+    PyDict_SetItem(py_kwargs, py_cast(key), py_cast(value));
     _kwargs(py_kwargs, kws...);
     return py_kwargs;
 }

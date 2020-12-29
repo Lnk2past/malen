@@ -32,7 +32,7 @@ inline PyObject* _args(PyObject *py_args, std::size_t idx, const T &t)
     {
         py_args = make_py_tuple(1);
     }
-    if (PyTuple_SetItem(py_args, idx, convert_to_python(t)))
+    if (PyTuple_SetItem(py_args, idx, py_cast(t)))
     {
         throw std::runtime_error("Could not pack the argument at index " + std::to_string(idx) + " into the argument tuple!");
     }

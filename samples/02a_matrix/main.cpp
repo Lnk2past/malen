@@ -18,7 +18,7 @@ public:
 
     void populate(std::vector<int> &d)
     {
-        malen::convert_to_cpp(invoke(__FUNCTION__, nullptr, nullptr), d);
+        malen::cpp_cast(invoke(__FUNCTION__, nullptr, nullptr), d);
     }
 
     void print_matrix(const std::vector<int> &d)

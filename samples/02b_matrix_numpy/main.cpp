@@ -20,17 +20,17 @@ public:
 
     void populate(std::vector<int> &d)
     {
-        malen::convert_to_cpp(invoke(__FUNCTION__, nullptr, nullptr), d);
+        malen::cpp_cast(invoke(__FUNCTION__, nullptr, nullptr), d);
     }
 
     void populate2d(std::vector<std::vector<int>> &d2)
     {
-        malen::convert_to_cpp(invoke(__FUNCTION__, nullptr, nullptr), d2);
+        malen::cpp_cast(invoke(__FUNCTION__, nullptr, nullptr), d2);
     }
 
     void populate3d(std::vector<std::vector<std::vector<int>>> &d3)
     {
-        malen::convert_to_cpp(invoke(__FUNCTION__, nullptr, nullptr), d3);
+        malen::cpp_cast(invoke(__FUNCTION__, nullptr, nullptr), d3);
     }
 
     template <typename T>
