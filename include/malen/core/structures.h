@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <malen/utilities/convert_cpp_to_py.h>
-#include <malen/utilities/convert_py_to_cpp.h>
+#include <malen/core/convert_cpp_to_py.h>
+#include <malen/core/convert_py_to_cpp.h>
 
 namespace malen
 {

@@ -11,9 +11,9 @@ struct ModuleCache
 
 static std::unordered_map<std::string, ModuleCache> py_modules = {};
 
-#include <malen/utilities/interpreter.h>
-#include <malen/utilities/loaders.h>
-#include <malen/utilities/invokers.h>
-#include <malen/utilities/convert_cpp_to_py.h>
-#include <malen/utilities/convert_py_to_cpp.h>
-#include <malen/utilities/structures.h>
+#include <malen/core/interpreter.h>
+#include <malen/core/loaders.h>
+#include <malen/core/invokers.h>
+#include <malen/core/convert_cpp_to_py.h>
+#include <malen/core/convert_py_to_cpp.h>
+#include <malen/core/structures.h>
