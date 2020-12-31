@@ -1,75 +1,76 @@
 #pragma once
 #include <Python.h>
-
+#include <iostream>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace malen
 {
-inline PyObject* py_cast(PyObject* c)
+static inline PyObject* py_cast(PyObject* c)
 {
     return c;
 }
 
-template <typename T, typename std::enable_if_t<std::is_pointer<T>::value>* = nullptr>
-inline PyObject* py_cast(const T c)
-{
-    return PyLong_FromLong(reinterpret_cast<std::intptr_t>(c));
-}
-
-inline PyObject* py_cast(const int c)
+static inline PyObject* py_cast(const int c)
 {
     return PyLong_FromLong(c);
 }
 
-inline PyObject* py_cast(const unsigned int c)
+static inline PyObject* py_cast(const unsigned int c)
 {
     return PyLong_FromUnsignedLong(c);
 }
 
-inline PyObject* py_cast(const long c)
+static inline PyObject* py_cast(const long c)
 {
     return PyLong_FromLong(c);
 }
 
-inline PyObject* py_cast(const unsigned long c)
+static inline PyObject* py_cast(const unsigned long c)
 {
     return PyLong_FromUnsignedLong(c);
 }
 
-inline PyObject* py_cast(const long long c)
+static inline PyObject* py_cast(const long long c)
 {
     return PyLong_FromLongLong(c);
 }
 
-inline PyObject* py_cast(const unsigned long long c)
+static inline PyObject* py_cast(const unsigned long long c)
 {
     return PyLong_FromUnsignedLongLong(c);
 }
 
-inline PyObject* py_cast(const double c)
+static inline PyObject* py_cast(const double c)
 {
     return PyFloat_FromDouble(c);
 }
 
-inline PyObject* py_cast(const std::string &c)
-{
-    return PyUnicode_FromString(c.c_str());
-}
-
-inline PyObject* py_cast(const char *c)
-{
-    return PyUnicode_FromString(c);
-}
-
-inline PyObject* py_cast(const bool c)
+static inline PyObject* py_cast(const bool c)
 {
     return PyBool_FromLong(static_cast<long>(c));
 }
 
+static inline PyObject* py_cast(const char *c)
+{
+    return PyUnicode_FromString(c);
+}
+
+static inline PyObject* py_cast(const std::string &c)
+{
+    return PyUnicode_FromString(c.c_str());
+}
+
+template <typename T, typename std::enable_if_t<std::is_pointer<T>::value>* = nullptr>
+static inline PyObject* py_cast(const T c)
+{
+    return PyLong_FromLong(reinterpret_cast<std::intptr_t>(c));
+}
+
 template <template<typename...> class C, typename T>
-inline PyObject* py_cast(const C<T> &c)
+static inline PyObject* py_cast(const C<T> &c)
 {
     PyObject *py_list = PyList_New(c.size());
     for (std::size_t idx = 0; idx < c.size(); ++idx)
@@ -82,8 +83,8 @@ inline PyObject* py_cast(const C<T> &c)
     return py_list;
 }
 
-template <template<typename...> class M, typename KT, typename VT>
-inline PyObject* py_cast(const M<KT, VT> &c)
+template <typename KT, typename VT>
+static inline PyObject* py_cast(const std::map<KT, VT> &c)
 {
     PyObject *py_dict = PyDict_New();
     for (const auto &p : c)
@@ -104,8 +105,6 @@ extern "C"
 #endif
 #include <numpy/arrayobject.h>
 }
-#include <cstdint>
-#include <type_traits>
 
 template <typename T>
 struct numpy_type
@@ -114,69 +113,72 @@ struct numpy_type
 template <>
 struct numpy_type<std::int8_t>
 {
-    static constexpr int typenum = NPY_INT8;
+    static inline constexpr int typenum = NPY_INT8;
 };
 
 template <>
 struct numpy_type<std::int16_t>
 {
-    static constexpr int typenum = NPY_INT16;
+    static inline constexpr int typenum = NPY_INT16;
 };
 
 template <>
 struct numpy_type<std::int32_t>
 {
-    static constexpr int typenum = NPY_INT32;
+    static inline constexpr int typenum = NPY_INT32;
 };
 
 template <>
 struct numpy_type<std::int64_t>
 {
-    static constexpr int typenum = NPY_INT64;
+    static inline constexpr int typenum = NPY_INT64;
 };
 
 template <>
 struct numpy_type<std::uint8_t>
 {
-    static constexpr int typenum = NPY_UINT8;
+    static inline constexpr int typenum = NPY_UINT8;
 };
 
 template <>
 struct numpy_type<std::uint16_t>
 {
-    static constexpr int typenum = NPY_UINT16;
+    static inline constexpr int typenum = NPY_UINT16;
 };
 
 template <>
 struct numpy_type<std::uint32_t>
 {
-    static constexpr int typenum = NPY_UINT32;
+    static inline constexpr int typenum = NPY_UINT32;
 };
 
 template <>
 struct numpy_type<std::uint64_t>
 {
-    static constexpr int typenum = NPY_UINT64;
+    static inline constexpr int typenum = NPY_UINT64;
 };
 
 template <>
 struct numpy_type<float>
 {
-    static constexpr int typenum = NPY_FLOAT;
+    static inline constexpr int typenum = NPY_FLOAT;
 };
 
 template <>
 struct numpy_type<double>
 {
-    static constexpr int typenum = NPY_DOUBLE;
+    static inline constexpr int typenum = NPY_DOUBLE;
 };
 
 template<class T>
-inline static constexpr int numpy_type_v = numpy_type<T>::typenum;
+static inline constexpr int numpy_type_v = numpy_type<T>::typenum;
 
 template <typename T>
-inline PyObject* py_cast(const std::vector<T> &c)
+static inline PyObject* py_cast(const std::vector<T> &c)
 {
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
     npy_intp dims[1] = {static_cast<npy_intp>(c.size())};
     PyObject *np_array = PyArray_SimpleNewFromData(
         1,
@@ -184,12 +186,18 @@ inline PyObject* py_cast(const std::vector<T> &c)
         numpy_type_v<T>,
         static_cast<void*>(const_cast<T*>(c.data()))
     );
+    
+    PyGILState_Release(gstate);
+
     return np_array;
 }
 
 template <typename T>
-inline PyObject* py_cast(const std::vector<std::vector<T>> &c)
+static inline PyObject* py_cast(const std::vector<std::vector<T>> &c)
 {
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
     if (c.size() == 0)
     {
         npy_intp dims[2] = {0, 0};
@@ -208,12 +216,17 @@ inline PyObject* py_cast(const std::vector<std::vector<T>> &c)
 
     PyArray_Resize(reinterpret_cast<PyArrayObject*>(np_arrays), &new_dims, 0, NPY_CORDER);
 
+    PyGILState_Release(gstate);
+
     return np_arrays;
 }
 
 template <typename T>
-inline PyObject* py_cast(const std::vector<std::vector<std::vector<T>>> &c)
+static inline PyObject* py_cast(const std::vector<std::vector<std::vector<T>>> &c)
 {
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
     if (c.size() == 0)
     {
         npy_intp dims[3] = {0, 0, 0};
@@ -232,7 +245,10 @@ inline PyObject* py_cast(const std::vector<std::vector<std::vector<T>>> &c)
 
     PyArray_Resize(reinterpret_cast<PyArrayObject*>(np_arrays), &new_dims, 0, NPY_CORDER);
 
+    PyGILState_Release(gstate);
+
     return np_arrays;
 }
 #endif
+
 }
