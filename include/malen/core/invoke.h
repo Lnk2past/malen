@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <malen/core/structures.h>
+#include <malen/core/structure.h>
 
 namespace malen
 {

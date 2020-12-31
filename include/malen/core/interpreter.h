@@ -10,8 +10,8 @@
 #endif
 #endif
 
-#include <malen/core/loaders.h>
-#include <malen/core/convert_cpp_to_py.h>
+#include <malen/core/load.h>
+#include <malen/core/cast.h>
 
 namespace malen
 {
